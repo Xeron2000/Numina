@@ -12,7 +12,7 @@ from app.db.session import get_db
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # 密码加密上下文配置
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码与哈希是否匹配"""
@@ -22,16 +22,24 @@ def get_password_hash(password: str) -> str:
     """生成密码哈希"""
     return pwd_context.hash(password)
 
-def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
-    """用户认证逻辑"""
-    user = db.query(User).filter(User.username == username).first()
-    if not user or not verify_password(password, user.hashed_password):
-        return None
-    return user
-
-def get_user_by_username(db: Session, username: str) -> Optional[User]:
+def get_user_by_username(db: Session, username: str) -> Optional[dict]:
     """通过用户名获取用户"""
-    return db.query(User).filter(User.username == username).first()
+    user = db.query(
+        User.username,
+        User.email,
+        User.full_name,
+        User.is_active,
+        User.hashed_password
+    ).filter(User.username == username).first()
+    if user:
+        return {
+            "username": user[0],
+            "email": user[1],
+            "full_name": user[2],
+            "is_active": user[3],
+            "hashed_password": user[4]
+        }
+    return None
 
 def create_access_token(*, data: dict, expires_delta: timedelta = None) -> str:
     """创建JWT访问令牌"""

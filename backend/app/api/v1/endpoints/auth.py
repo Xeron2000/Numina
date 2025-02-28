@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -11,7 +12,7 @@ from app.schemas.token import Token
 from app.schemas.user import UserResponse
 from app.models.user import User
 from app.core.security import (
-    authenticate_user,
+
     create_access_token,
     get_user_by_username,
     get_current_active_user
@@ -76,34 +77,39 @@ async def read_current_user(
 REFRESH_TOKEN_REUSE_GRACE_SECONDS = 86400  # 24小时刷新令牌重用宽限期
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 class TokenData(BaseModel):
     username: str | None = None
 
-class User(BaseModel):
-    username: str
-    disabled: bool | None = None
 
 # 密码验证工具
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
-# 模拟用户数据（实际应查询数据库）
-def get_user(db, username: str):
-    fake_user = {
-        "username": "admin",
-        "hashed_password": pwd_context.hash("admin"),
-        "disabled": False
-    }
-    return fake_user if username == "admin" else None
+# 从数据库查询用户(通过邮箱)
+async def get_user_by_email(db_provider, email: str):
+    async with db_provider() as db:
+        result = await db.execute(
+            select(User).where(User.email == email)
+        )
+        return result.scalars().first()
+
+# 从数据库查询用户(通过用户名)
+async def get_user(db_provider, username: str):
+    async with db_provider() as db:
+        result = await db.execute(
+            select(User).where(User.username == username)
+        )
+        return result.scalars().first()
 
 # 用户认证
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
-    if not user or not verify_password(password, user["hashed_password"]):
-        raise exceptions.CredentialsException()
+async def authenticate_user(db_provider, email: str, password: str):
+    user = await get_user_by_email(db_provider, email)
+    if not user or not verify_password(password, user.hashed_password):
+        return '邮箱或密码错误'
+    
     return user
 
 # 创建令牌
@@ -113,9 +119,14 @@ def create_token(data: dict, expires_delta: timedelta):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
+class Status(BaseModel):
+    status:int
+    message:str | dict
+
+
 # 登录接口
 @router.post("/login",
-    response_model=Token,
+    response_model=Status,
     responses={
         200: {"description": "成功获取令牌", "content": {
             "application/json": {
@@ -126,41 +137,65 @@ def create_token(data: dict, expires_delta: timedelta):
                 }
             }
         }},
-        401: {"description": "无效凭证"}
+        401: {"description": "账户错误"},
+        500: {"description": "系统错误"}
     }
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
-):
-    """JWT登录接口
-    
-    - 使用用户名密码获取访问令牌和刷新令牌
-    - 访问令牌有效期：30分钟
-    - 刷新令牌有效期：7天
-    """
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user or not user.is_active:
-        raise exceptions.CredentialsException()
-    
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    
-    access_token = create_access_token(
-        data={"sub": user.username},
-        expires_delta=access_token_expires
-    )
-    
-    refresh_token = create_access_token(
-        data={"sub": user.username, "token_type": "refresh"},
-        expires_delta=refresh_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer"
-    }
+):  
+    try:
+        """JWT登录接口
+        
+        - 使用邮箱密码获取访问令牌和刷新令牌
+        - 访问令牌有效期：30分钟
+        - 刷新令牌有效期：7天
+        """
+        """
+        form_data传过来的数据为email,password
+        但是OAuth2PasswordRequestForm只有username,password
+        所以form_data.username 实际上是 email
+        """
+        user = await authenticate_user(get_db, form_data.username, form_data.password) 
+        if isinstance(user,str):
+            return {
+                        'status':401,
+                        'message':user
+                    } 
+        if not user.is_active:
+            return {
+                        'status':401,
+                        'message':'该用户被禁用'
+                    } 
+        
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        
+        access_token = create_access_token(
+            data={"sub": user.username},
+            expires_delta=access_token_expires
+        )
+        
+        refresh_token = create_access_token(
+            data={"sub": user.username, "token_type": "refresh"},
+            expires_delta=refresh_token_expires
+        )
+        
+        return {
+                    'status':200,
+                    'message':{
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "token_type": "bearer"  
+                    }
+                } 
+    except Exception as e:
+        logging.info(e)
+        return {
+                    'status':500,
+                    'message':'系统错误'
+                }
 
 # 令牌刷新接口
 @router.post("/refresh",
@@ -229,9 +264,14 @@ async def get_current_user(
     
     # 从数据库获取完整用户信息
     result = await db.execute(
-        select(User).where(User.username == username)
+        select(
+            User.username,
+            User.email,
+            User.full_name,
+            User.is_active
+        ).where(User.username == username)
     )
-    user = result.scalars().first()
+    user = result.first()
     
     if not user or user.disabled:
         raise HTTPException(
@@ -239,7 +279,12 @@ async def get_current_user(
             detail="User not found or inactive"
         )
         
-    return UserInDB(**user)
+    return UserInDB(
+        username=user[0],
+        email=user[1],
+        full_name=user[2],
+        is_active=user[3]
+    )
 
 class UserCreate(BaseModel):
     """用户注册请求模型"""
@@ -253,62 +298,111 @@ class UserResponse(BaseModel):
     full_name: str | None
     is_active: bool
 
-@router.post("/register", response_model=UserResponse)
+class RegisterResponse(BaseModel):
+    status: int
+    message: str | None
+    data: dict | str
+
+@router.post("/register", response_model=RegisterResponse)
 async def register_user(
     user: UserCreate,
-    db: AsyncSession = Depends(get_db)
+    db_provider = Depends(get_db)
 ):
     """用户注册接口
-    
     - 创建新用户
     - 密码会自动进行哈希处理
     - 返回创建的用户信息
     """
-    # 检查用户名是否已存在
-    async with db as session:
-        result = await session.execute(select(User).where(User.username == user.username))
+    async with db_provider as db:
+        if user.username == '':
+            return RegisterResponse(
+                status=400,
+                message='Fail',
+                data= '用户名不能为空'
+            )
+
+        if user.email == '':
+            return RegisterResponse(
+                status=400,
+                message='Fail',
+                data= '邮箱不能为空'
+            )
+        
+        if user.password == '':
+            return RegisterResponse(
+                status=400,
+                message='Fail',
+                data= '密码不能为空'
+            )
+
+        # 检查用户名是否已存在
+        result = await db.execute(
+            select(
+                User.username
+            ).where(User.username == user.username)
+        )
+
         existing_user = result.scalars().first()
         if existing_user:
-            raise HTTPException(
-                status_code=400,
-                detail="用户名已被使用"
+            return RegisterResponse(
+                status=400,
+                message='Fail',
+                data= '用户名已被使用'
             )
-    
-    # 检查邮箱是否已存在
-    async with db as session:
-        result = await session.execute(select(User).where(User.email == user.email))
+        
+        # 检查邮箱是否已存在
+        result = await db.execute(
+            select(
+                User.email
+            ).where(User.email == user.email)
+        )
         existing_email = result.scalars().first()
         if existing_email:
-            raise HTTPException(
-                status_code=400,
-                detail="邮箱已被使用"
+            return RegisterResponse(
+                status=400,
+                message='Fail',
+                data= '邮箱已被使用'
             )
-    
-    # 创建用户
-    try:
-        hashed_password = pwd_context.hash(user.password)
-        db_user = User(
-            username=user.username,
-            email=user.email,
-            hashed_password=hashed_password,
-            is_active=True
-        )
-        db.add(db_user)
-        await db.commit()
-        await db.refresh(db_user)
         
-        return UserResponse(
-            username=db_user.username,
-            email=db_user.email,
-            full_name=None,
-            is_active=db_user.is_active
+        # 创建用户
+        hashed_password = pwd_context.hash(user.password)
+        db_user = {
+            "username": user.username,
+            "email": user.email,
+            "hashed_password": hashed_password,
+            "is_active": True
+        }
+        
+        # 创建SQLAlchemy User对象
+        new_user = User(
+            username=db_user["username"],
+            email=db_user["email"],
+            hashed_password=db_user["hashed_password"],
+            is_active=db_user["is_active"]
         )
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"用户注册失败: {str(e)}"
-        )
+        try:
+            db.add(new_user)
+            await db.commit()
+            await db.refresh(new_user)
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=f"用户注册失败: {str(e)}"
+            )
+        finally:
+            # 返回成功响应
+            return RegisterResponse(
+                status = 200,
+                message = "Success",
+                data = {
+                    'username' : new_user.username,
+                    'email' : new_user.email,
+                    'full_name' : None,
+                    'is_active' : new_user.is_active
+                }
+            )
+                  
 
 # 获取当前用户接口
 @router.get(

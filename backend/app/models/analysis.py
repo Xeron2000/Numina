@@ -11,5 +11,7 @@ class Analysis(Base):
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"))
+    dataset_id = Column(Integer, ForeignKey("datasets.id"))
     
     user = relationship("User", back_populates="analyses")
+    dataset = relationship("Dataset", back_populates="analyses")

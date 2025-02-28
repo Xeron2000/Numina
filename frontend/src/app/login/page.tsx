@@ -1,6 +1,70 @@
+"use client"
 import React from 'react';
+import { POST, AuthResponse } from '../api/auth/route'
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import Swal from 'sweetalert2';
 
 export default function LoginPage() {
+
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    if (!formData.email) {
+      Swal.fire({
+        icon: 'warning',
+        title: '邮箱未填写',
+      })
+
+      setLoading(false)
+
+    } else if (!formData.password) {
+      Swal.fire({
+        icon: 'warning',
+        title: '密码未填写',
+      })
+
+      setLoading(false)
+
+    } else {
+      try {
+        const response = await POST(formData);
+        const data = await response.json();
+        
+        if (response.status === 200) {
+          router.push("/dashboard/overview");
+        } else if (response.status === 401) {
+          Swal.fire({
+            icon: 'warning',
+            title: data.message,
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: data.message,
+          });
+        }
+
+      } catch (err: any) {
+        console.log("err", err)
+
+        Swal.fire({
+          icon: 'error',
+          title: '系统错误',
+        });
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
   return (
     <div className="h-full flex items-center justify-center bg-base-100">
       <div className="card bg-base-200 shadow-xl w-full max-w-md">
@@ -14,6 +78,10 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="请输入邮箱"
+                value={formData.email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 className="input input-bordered w-full"
                 required
               />
@@ -25,13 +93,17 @@ export default function LoginPage() {
               <input
                 type="password"
                 placeholder="请输入密码"
+                value={formData.password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 className="input input-bordered w-full"
                 required
               />
             </div>
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary w-full">
-                登录
+            <div className="form-control mt-10">
+              <button onClick={handleLogin} className="btn btn-primary w-full mt-5">
+                {loading ? "登录中..." : "登录"}
               </button>
             </div>
           </form>

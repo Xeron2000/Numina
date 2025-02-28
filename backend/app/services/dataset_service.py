@@ -4,11 +4,11 @@ import logging
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from app.db.session import get_dynamic_db_engine
-from app.schemas.datasets import DatabaseConnection, DatasetCreate
+from app.schemas.datasets import DatabaseConnection, Dataset, DatasetCreate
 from app.core.config import settings
 from app.utils.file_processing import save_upload_file, parse_data_file
 from app.utils.encryption import encrypt_password
-from app.core.exceptions import DatasetNotFoundException
+from app.core.exceptions import DatabaseConnectionException, DatasetNotFoundException
 
 logger = logging.getLogger(__name__)
 

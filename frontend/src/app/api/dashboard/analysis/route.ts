@@ -21,16 +21,16 @@ export async function POST(request: Request) {
     let response
     switch (analysisRequest.type) {
       case 'trend':
-        response = await axios.post('/api/v1/analysis/analyze', analysisRequest)
+        response = await axios.post('/analysis/analyze', analysisRequest)
         break
       case 'clean':
-        response = await axios.post('/api/v1/analysis/clean', analysisRequest)
+        response = await axios.post('/analysis/clean', analysisRequest)
         break
       case 'transform':
-        response = await axios.post('/api/v1/analysis/transform', analysisRequest)
+        response = await axios.post('/analysis/transform', analysisRequest)
         break
       case 'train':
-        response = await axios.post('/api/v1/analysis/train', analysisRequest)
+        response = await axios.post('/analysis/train', analysisRequest)
         break
       default:
         return NextResponse.json(
@@ -53,7 +53,7 @@ export async function PUT(request: Request) {
     const fileData = await request.formData()
     
     // 上传文件
-    const response = await axios.post('/api/v1/analysis/upload', fileData, {
+    const response = await axios.post('/analysis/upload', fileData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
