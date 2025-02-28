@@ -53,4 +53,4 @@ backend/sql_app.db
 # 依赖
 node_modules/
 venv/
-__pycache__/
+**/__pycache__/
