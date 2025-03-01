@@ -30,11 +30,6 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-8">
-      {/* 标题区域 */}
-      <div className="bg-base-100 p-6 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-primary">报告管理</h1>
-        <p className="text-base-content/80">查看、生成和管理数据分析报告</p>
-      </div>
 
       {/* 操作按钮 */}
       <div className="flex gap-4">

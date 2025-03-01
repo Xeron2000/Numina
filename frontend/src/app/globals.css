@@ -1,87 +1,121 @@
+/* app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* 定义CSS变量用于特殊场景 */
+    --google-elevation: 0 1px 3px 1px rgba(0,0,0,0.15);
+    --google-transition: cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* 基础元素样式重置 */
   body {
-    @apply transition-colors duration-200;
+    @apply bg-base-100 text-base-content;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
+  /* 标题样式 */
   h1 {
-    @apply text-4xl font-bold mb-6;
+    @apply text-3xl font-medium text-gray-900 dark:text-gray-100 mb-4;
   }
-
+  
   h2 {
-    @apply text-3xl font-bold mb-5;
+    @apply text-2xl font-medium text-gray-800 dark:text-gray-200 mb-3;
   }
 
-  h3 {
-    @apply text-2xl font-bold mb-4;
-  }
-
-  h4 {
-    @apply text-xl font-bold mb-3;
-  }
-
-  h5 {
-    @apply text-lg font-bold mb-2;
-  }
-
-  h6 {
-    @apply text-base font-bold mb-1;
-  }
-
-  p {
-    @apply text-base mb-4;
-  }
-
+  /* 链接样式 */
   a {
-    @apply text-primary hover:text-primary-dark transition-colors;
+    @apply text-primary transition-colors duration-200;
   }
 
-  button {
-    @apply transition-all duration-200;
+  /* 表单元素增强 */
+  input[type="text"],
+  input[type="number"],
+  select {
+    @apply bg-base-200 border border-base-300 rounded-lg px-4 py-2 
+           focus:ring-2 focus:ring-primary focus:border-transparent
+           transition-all duration-200 shadow-sm;
+  }
+
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-base-200;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary rounded-full
   }
 }
 
 @layer components {
-  .card {
-    @apply bg-surface rounded-lg shadow-md p-6;
+  /* Google风格卡片 */
+  .google-card {
+    @apply bg-base-100 rounded-lg p-6 shadow-google
+           transition-all duration-200 hover:shadow-lg
+           border border-base-200 dark:border-base-300;
   }
 
-  .btn-primary {
-    @apply bg-primary text-primary-content hover:bg-primary-dark px-4 py-2 rounded-md;
+  /* 数据展示组件 */
+  .data-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full 
+           bg-primary/10 text-primary text-sm font-medium;
   }
 
-  .btn-secondary {
-    @apply bg-secondary text-secondary-content hover:bg-secondary-dark px-4 py-2 rounded-md;
+  /* 增强版按钮 */
+  .btn-google {
+    @apply normal-case rounded-full px-6 py-2 font-medium 
+           transition-all duration-200 transform hover:scale-[1.02]
+           active:scale-95 shadow-sm;
   }
 
-  .input {
-    @apply bg-surface border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary;
+  /* 图表容器 */
+  .chart-container {
+    @apply google-card p-4;
+    min-height: 400px;
   }
 }
 
 @layer utilities {
-  .container {
-    @apply mx-auto px-4;
+  /* 自定义阴影动画 */
+  .animate-google-elevation {
+    animation: googleElevation 0.3s var(--google-transition) forwards;
   }
 
-  @screen sm {
-    .container {
-      @apply px-6;
-    }
+  /* 数据可视化专用文字 */
+  .viz-text {
+    @apply text-sm font-medium fill-current;
   }
+}
 
-  @screen md {
-    .container {
-      @apply px-8;
-    }
+/* 自定义动画 */
+@keyframes googleElevation {
+  from {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
   }
+  to {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+}
 
-  @screen lg {
-    .container {
-      @apply px-12;
-    }
+/* 暗黑模式覆盖 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --google-elevation: 0 1px 3px 1px rgba(255,255,255,0.1);
+  }
+}
+
+/* 打印样式优化 */
+@media print {
+  .google-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
   }
 }

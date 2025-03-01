@@ -71,7 +71,10 @@ export default function KanbanBoard({ initialCards }: KanbanBoardProps) {
   useEffect(() => {
     fetch('/api/dashboard/analysis/templates')
       .then(res => res.json())
-      .then(data => setTemplates(data));
+      .then(data => setTemplates(data.map((template: any) => ({
+        ...template,
+        columns: template.parameters,
+      }))));
   }, []);
 
   const handleDragEnd = (event: any) => {
@@ -85,34 +88,37 @@ export default function KanbanBoard({ initialCards }: KanbanBoardProps) {
     }
   };
 
-  return (
-    <BoardContainer>
-      <Box sx={{ gridArea: 'template' }}>
-        <Select
-          value={selectedTemplate}
-          onChange={(e) => {
-            setSelectedTemplate(e.target.value);
-            handleTemplateChange(e.target.value);
-          }}
-          fullWidth
-        >
-          {templates.map(template => (
-            <MenuItem key={template.id} value={template.id}>
-              {template.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
-
-      <BoardGrid columns={columns}>
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={cards} strategy={verticalListSortingStrategy}>
-            {cards.map(card => (
-              <KanbanCard key={card.id} id={card.id} title={card.title} content={card.content} />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </BoardGrid>
-    </BoardContainer>
-  );
-}
+  
+    return (
+      <div className="chart-container">
+        <BoardContainer>
+          <Box sx={{ gridArea: 'template' }}>
+            <Select
+              value={selectedTemplate}
+              onChange={(e) => {
+              setSelectedTemplate(e.target.value);
+              handleTemplateChange(e.target.value);
+            }}
+            fullWidth
+            >
+              {templates.map(template => (
+                <MenuItem key={template.id} value={template.id}>
+                  {template.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+  
+          <BoardGrid columns={columns}>
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={cards} strategy={verticalListSortingStrategy}>
+                {cards.map(card => (
+                  <KanbanCard key={card.id} id={card.id} title={card.title} content={card.content} />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </BoardGrid>
+        </BoardContainer>
+      </div>
+    );
+  }

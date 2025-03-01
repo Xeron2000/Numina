@@ -66,14 +66,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-full flex items-center justify-center bg-base-100">
-      <div className="card bg-base-200 shadow-xl w-full max-w-md">
-        <div className="card-body">
-          <h1 className="text-3xl font-bold text-center mb-6">登录</h1>
+    <div className="h-screen flex items-center justify-center bg-base-200">
+      <div className="google-card w-full max-w-md">
+        <div className="card-body space-y-4">
+          <h1 className="text-3xl font-bold text-center text-base-content">登录</h1>
           <form className="space-y-4">
             <div className="form-control">
               <label className="label">
-                <span className="label-text">邮箱</span>
+                <span className="label-text viz-text">邮箱</span>
               </label>
               <input
                 type="email"
@@ -88,7 +88,7 @@ export default function LoginPage() {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">密码</span>
+                <span className="label-text viz-text">密码</span>
               </label>
               <input
                 type="password"
@@ -102,13 +102,13 @@ export default function LoginPage() {
               />
             </div>
             <div className="form-control mt-10">
-              <button onClick={handleLogin} className="btn btn-primary w-full mt-5">
+              <button onClick={handleLogin} className="btn-google bg-primary text-white w-full mt-5">
                 {loading ? "登录中..." : "登录"}
               </button>
             </div>
           </form>
-          <div className="divider">或</div>
-          <button className="btn btn-outline w-full">
+          <div className="divider viz-text">或</div>
+          <button className="btn btn-outline w-full viz-text">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 mr-2"
@@ -133,7 +133,7 @@ export default function LoginPage() {
             </svg>
             使用 Google 登录
           </button>
-          <div className="text-center mt-4">
+          <div className="text-center mt-4 viz-text">
             没有账号？{" "}
             <a href="/register" className="link link-primary">
               立即注册

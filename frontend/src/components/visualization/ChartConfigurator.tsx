@@ -32,13 +32,13 @@ export default function ChartConfigurator({
   };
 
   return (
-    <div className={`space-y-4 p-4 bg-gray-50 rounded-lg ${className || ''}`}>
+    <div className={`space-y-4 p-4 rounded-lg ${className || ''}`}>
       <div>
         <label className="block text-sm font-medium mb-1">图表类型</label>
         <select
           value={chartType}
           onChange={(e) => setChartType(e.target.value as ChartConfiguratorProps['chartType'])}
-          className="w-full p-2 border rounded"
+          className="w-full p-2  rounded"
         >
           <option value="line">折线图</option>
           <option value="dynamic-line">动态折线图</option>

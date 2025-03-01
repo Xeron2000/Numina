@@ -1,39 +1,20 @@
-import type { Config } from 'tailwindcss';
-import daisyui from 'daisyui';
+// tailwind.config.ts
+import type { Config } from 'tailwindcss'
+import daisyui from 'daisyui'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
-      colors: {
-        primary: {
-          DEFAULT: '#1a73e8',
-          light: '#4285f4',
-          dark: '#1557b7',
-        },
-        secondary: {
-          DEFAULT: '#34a853',
-          light: '#4caf50',
-          dark: '#2e7d32',
-        },
-        background: {
-          DEFAULT: '#ffffff',
-          dark: '#202124',
-        },
-        text: {
-          DEFAULT: '#202124',
-          dark: '#e8eaed',
-        },
-        surface: {
-          DEFAULT: '#ffffff',
-          dark: '#292a2d',
-        },
-        error: '#d93025',
-        warning: '#f9ab00',
-        success: '#34a853',
+      fontFamily: {
+        sans: ['Roboto', 'sans-serif'],
       },
+      boxShadow: {
+        'google': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+      }
     },
   },
   plugins: [daisyui],
@@ -41,32 +22,38 @@ const config: Config = {
     themes: [
       {
         light: {
-          ...require('daisyui/src/theming/themes')['light'],
-          primary: '#1a73e8',
-          secondary: '#34a853',
-          accent: '#fbbc04',
-          neutral: '#5f6368',
-          'base-100': '#ffffff',
-          info: '#1a73e8',
-          success: '#34a853',
-          warning: '#f9ab00',
-          error: '#d93025',
+          "primary": "#1a73e8",
+          "secondary": "#fbbc04",
+          "accent": "#34a853",
+          "neutral": "#f8f9fa",
+          "base-100": "#ffffff",
+          "info": "#1a73e8",
+          "success": "#34a853",
+          "warning": "#fbbc04",
+          "error": "#ea4335",
+          "--rounded-box": "8px",
+          "--rounded-btn": "24px"
         },
         dark: {
-          ...require('daisyui/src/theming/themes')['dark'],
-          primary: '#8ab4f8',
-          secondary: '#81c995',
-          accent: '#fbbc04',
-          neutral: '#9aa0a6',
-          'base-100': '#202124',
-          info: '#8ab4f8',
-          success: '#81c995',
-          warning: '#f9ab00',
-          error: '#f28b82',
-        },
-      },
-    ],
+          "primary": "#8ab4f8",
+          "secondary": "#fbbc04",
+          "accent": "#34a853",
+          "neutral": "#202124",
+          "base-100": "#303134",
+          "info": "#8ab4f8",
+          "success": "#34a853",
+          "warning": "#fbbc04",
+          "error": "#ea4335",
+          "--rounded-box": "8px",
+          "--rounded-btn": "24px"
+        }
+      }
+    ] as any[], // 类型断言解决ts类型问题
+    darkTheme: "dark", // 明确指定暗黑主题名称
+    base: true,
+    styled: true,
+    utils: true,
   },
-};
+}
 
-export default config;
+export default config

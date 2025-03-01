@@ -18,7 +18,7 @@ export default function DatabaseConnector({ onConnect }: DatabaseConnectorProps)
         value={connectionString}
         onChange={(e) => setConnectionString(e.target.value)}
         placeholder="输入数据库连接字符串"
-        className="w-full p-2 border rounded"
+        className="w-full p-2 rounded"
       />
       <button
         onClick={handleConnect}

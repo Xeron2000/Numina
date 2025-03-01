@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
-type ThemeContextType = {
+export type ThemeContextType = {
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;

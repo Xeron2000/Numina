@@ -21,21 +21,6 @@ const initialCards = [
 export default function AnalysisPage() {
   return (
     <div className="p-6 flex flex-col gap-6 min-h-screen bg-base-100">
-      <h1 className="text-4xl font-bold text-primary-content bg-primary p-4 rounded-box shadow-lg">
-        智能分析看板
-      </h1>
-
-      <div className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
-        <div className="card-body p-4 md:p-6">
-          <h2 className="card-title text-2xl mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            任务看板
-          </h2>
-          <KanbanBoard initialCards={initialCards} />
-        </div>
-      </div>
 
       <div className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
         <div className="card-body p-4 md:p-6">

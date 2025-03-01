@@ -6,33 +6,13 @@ import ChartConfigurator from '@/components/visualization/ChartConfigurator';
 export default function OverviewPage() {
   return (
     <div className="p-6 space-y-6 bg-base-100 min-h-screen">
-      {/* 导航头 - Material Design风格 */}
-      <div className="flex items-center justify-between p-4 bg-white shadow-sm rounded-lg border border-gray-100">
-        <h1 className="text-2xl font-medium text-gray-800">数据分析总览</h1>
-        <div className="flex items-center gap-4">
-          {/* 搜索框 */}
-          <div className="form-control">
-            <input
-              type="text"
-              placeholder="搜索..."
-              className="input input-bordered input-sm w-48 bg-gray-50 focus:bg-white focus:border-blue-500"
-            />
-          </div>
-          {/* 新增按钮 */}
-          <button className="btn btn-circle btn-sm btn-primary shadow-sm hover:shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
-      </div>
 
       {/* 关键指标卡片 - Material Design风格 */}
       {/* Google风格指标卡片 */}
       {/* 关键指标卡片组 - Material Design风格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 数据增长卡片 */}
-        <div className="card bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+        <div className="card shadow-sm hover:shadow-md transition-shadow ">
           <div className="card-body p-4">
             <div className="flex items-center gap-4">
               <div className="bg-blue-100 p-3 rounded-full">
@@ -106,7 +86,7 @@ export default function OverviewPage() {
         {/* 图表配置区 */}
         {/* Google风格图表区域 */}
         {/* 图表配置区 - Material Design风格 */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+        <div className="lg:col-span-2  p-6 rounded-lg shadow-md ">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-medium text-gray-800">实时数据趋势</h2>
             <div className="flex gap-2">
@@ -128,7 +108,7 @@ export default function OverviewPage() {
               chartType="line"
               title="用户活跃度趋势"
               onConfigChange={(config) => console.log('配置更新:', config)}
-              className="rounded-lg border border-gray-100"
+              className="rounded-lg"
             />
           </div>
         </div>

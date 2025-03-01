@@ -2,7 +2,6 @@
 import { useState } from "react"
 import axios from "@/lib/axios"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/daisyui"
 import Swal from 'sweetalert2';
 
 export default function RegisterPage() {
@@ -46,29 +45,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex justify-center items-center h-full bg-base-200">
-      <div className="card w-full max-w-md bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h1 className="text-3xl font-bold text-center mb-6">注册</h1>
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">用户名</span>
-            </label>
-            <input
-              type="text"
-              placeholder="请输入用户名"
-              value={formData.username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-              className="input input-bordered w-full"
-              required
-            />
-          </div>
+    <div className="flex justify-center items-center h-screen bg-base-200">
+      <div className="google-card w-full max-w-md">
+        <div className="card-body space-y-4">
+          <h1 className="text-3xl font-bold text-center text-base-content">注册</h1>
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text">邮箱</span>
+              <span className="label-text viz-text">邮箱</span>
             </label>
             <input
               type="email"
@@ -84,7 +68,7 @@ export default function RegisterPage() {
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text">密码</span>
+              <span className="label-text viz-text">密码</span>
             </label>
             <input
               type="password"
@@ -99,11 +83,11 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-control mt-6">
-            <Button onClick={handleSubmit} className="btn-primary" disabled={loading}>
+            <button onClick={handleSubmit} className="btn-google bg-primary text-white w-full" disabled={loading}>
               {loading ? "注册中..." : "立即注册"}
-            </Button>
+            </button>
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-4 viz-text">
             已有账号？{" "}
             <a href="/login" className="link link-primary">
               立即登录
