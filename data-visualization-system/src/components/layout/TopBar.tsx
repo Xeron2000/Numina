@@ -1,6 +1,6 @@
 // components/layout/TopBar.tsx
-import { UserNav } from "@/components/user-nav";
-import { ModeToggle } from "@/components/mode-toggle";
+import { UserNav } from "@/components/dashboard/user-nav";
+import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Bell, Menu } from "lucide-react";

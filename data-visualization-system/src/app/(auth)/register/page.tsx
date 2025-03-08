@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Logo } from "@/components/logo";
-import { ModeToggle } from "@/components/mode-toggle";
+import { Logo } from "@/components/dashboard/logo";
+import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
