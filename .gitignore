@@ -11,7 +11,10 @@
 /out/
 
 # fastapi
-/__pycache__/
+/venv
+/backend/app/__pycache__/
+/backend/app/*/__pycache__/
+/backend/app/api/*/__pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/

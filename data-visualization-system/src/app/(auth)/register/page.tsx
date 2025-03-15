@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Logo } from "@/components/dashboard/logo";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -18,7 +19,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,11 +35,25 @@ export default function RegisterPage() {
       // For demonstration, we'll simulate registration success and log the user in
       
       // Mock registration success
-      if (email && password) {
+      if (email && password && name) {
         // Proceed to login
-        const result = await login(email, password);
-        if (!result.success) {
-          setError(result.error || "Registration failed. Please try again.");
+        const params= {'username' : name,
+        'email': email,
+        'password' : password
+        }
+
+        const response = await fetch("http://127.0.0.1:8000/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(params),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) { 
+          router.push("/login");
+        }else {
+          setError(data.error || "Registration failed. Please try again.");
         }
       } else {
         setError("Please fill in all required fields");

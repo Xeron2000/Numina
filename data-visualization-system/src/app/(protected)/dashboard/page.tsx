@@ -7,17 +7,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useData } from "@/hooks/use-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, LineChart, PieChart } from "lucide-react";
+import { permissions, parse } from "@/lib/utils"
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const { fetchDashboardStats } = useData();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter()
 
   useEffect(() => {
+    const controller = new AbortController(); // 创建 AbortController
+    const signal = controller.signal; // 获取 signal
+
     const loadData = async () => {
       try {
         setLoading(true);
-        const data = await fetchDashboardStats();
+        // await new Promise(resolve => setTimeout(resolve, 6000));
+        const data = await fetchDashboardStats(signal);
         setStats(data);
       } catch (error) {
         console.error("Failed to load dashboard stats:", error);
@@ -26,8 +33,16 @@ export default function DashboardPage() {
       }
     };
 
-    loadData();
-  }, [fetchDashboardStats]);
+    if (permissions()) {
+      loadData();
+    } else {
+      router.push('/login')
+    }
+
+    return () => {
+      controller.abort(); // 组件卸载时取消请求
+    };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,46 +53,40 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <DashboardCard 
-          title="Total Datasets" 
-          value={stats?.datasetsCount || 0} 
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <DashboardCard
+          title="Total Datasets"
+          value={stats?.datasets || 0}
           description="Datasets uploaded"
           loading={loading}
           icon={<BarChart className="h-8 w-8 text-muted-foreground" />}
         />
-        <DashboardCard 
-          title="Visualizations" 
-          value={stats?.visualizationsCount || 0} 
+        <DashboardCard
+          title="Visualizations"
+          value={stats?.visualizations || 0}
           description="Created visualizations"
           loading={loading}
           icon={<PieChart className="h-8 w-8 text-muted-foreground" />}
         />
-        <DashboardCard 
-          title="Data Points" 
-          value={stats?.dataPointsCount?.toLocaleString() || 0} 
-          description="Total data points"
-          loading={loading}
-          icon={<LineChart className="h-8 w-8 text-muted-foreground" />}
-        />
-        <DashboardCard 
-          title="Analysis Reports" 
-          value={stats?.reportsCount || 0} 
+        <DashboardCard
+          title="Analysis Reports"
+          value={stats?.analytics || 0}
           description="Generated reports"
           loading={loading}
           icon={<BarChart className="h-8 w-8 text-muted-foreground" />}
         />
       </div>
 
-      <Tabs defaultValue="recent" className="w-full">
+      <Tabs defaultValue="datasets" className="w-full">
         <TabsList>
-          <TabsTrigger value="recent">Recent Activity</TabsTrigger>
-          <TabsTrigger value="popular">Popular Visualizations</TabsTrigger>
+          <TabsTrigger value="datasets">Recent Datasets</TabsTrigger>
+          <TabsTrigger value="visualizations">Recent Visualizations</TabsTrigger>
+          <TabsTrigger value="analytics">Recent Analytics</TabsTrigger>
         </TabsList>
-        <TabsContent value="recent" className="space-y-4">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="datasets" className="space-y-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              Array(3).fill(0).map((_, i) => (
+              Array(6).fill(0).map((_, i) => (
                 <Card key={i}>
                   <CardHeader className="pb-2">
                     <Skeleton className="h-4 w-3/4" />
@@ -89,17 +98,35 @@ export default function DashboardPage() {
                 </Card>
               ))
             ) : (
-              stats?.recentActivity?.map((item: any, index: number) => (
+              stats?.allsets?.datasets.map((item: any, index: number) => (
                 <Card key={index}>
                   <CardHeader className="pb-2">
-                    <CardTitle>{item.title}</CardTitle>
-                    <CardDescription>{item.type} • {item.date}</CardDescription>
+                    <CardTitle className="text-2xl">{item.name}</CardTitle>
+                    <CardDescription>{item.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-32 w-full bg-muted rounded-md flex items-center justify-center text-muted-foreground">
-                      {item.type === 'dataset' ? <BarChart className="h-12 w-12" /> : 
-                       item.type === 'visualization' ? <PieChart className="h-12 w-12" /> : 
-                       <LineChart className="h-12 w-12" />}
+                    <div className="rounded-md p-4 bg-gray-50 dark:bg-gray-800 mb-4">
+                      <p className="text-xl font-semibold mb-3">Basic information:</p>
+                      <p className="text-sm py-1 flex justify-between">
+                        <span className="font-medium">File Name:</span>
+                        <span>{parse(item.file_path) || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">File Type:</span>
+                        <span>{item.file_type.toUpperCase() || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Row Count:</span>
+                        <span>{item.row_count || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Create Time:</span>
+                        <span>{item.created_at || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Updated Time:</span>
+                        <span>{item.updated_at || 'null'}</span>
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -107,10 +134,10 @@ export default function DashboardPage() {
             )}
           </div>
         </TabsContent>
-        <TabsContent value="popular" className="space-y-4">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="visualizations" className="space-y-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {loading ? (
-              Array(3).fill(0).map((_, i) => (
+              Array(6).fill(0).map((_, i) => (
                 <Card key={i}>
                   <CardHeader className="pb-2">
                     <Skeleton className="h-4 w-3/4" />
@@ -122,21 +149,90 @@ export default function DashboardPage() {
                 </Card>
               ))
             ) : (
-              stats?.popularVisualizations?.map((item: any, index: number) => (
+              stats?.allsets?.visualizations.map((item: any, index: number) => (
                 <Card key={index}>
                   <CardHeader className="pb-2">
-                    <CardTitle>{item.title}</CardTitle>
-                    <CardDescription>{item.views} views • {item.date}</CardDescription>
+                    <CardTitle className="text-2xl">{item.name}</CardTitle>
+                    <CardDescription>{item.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-32 w-full bg-muted rounded-md flex items-center justify-center text-muted-foreground">
-                      {item.type === 'bar' ? <BarChart className="h-12 w-12" /> : 
-                       item.type === 'pie' ? <PieChart className="h-12 w-12" /> : 
-                       <LineChart className="h-12 w-12" />}
+                    <div className="rounded-md p-4 bg-gray-50 dark:bg-gray-800 mb-4">
+                      <p className="text-xl font-semibold mb-3">Basic information:</p>
+                      <p className="text-sm py-1 flex justify-between">
+                        <span className="font-medium">Chart Type:</span>
+                        <span>{item.visualization_type || 'null'}</span>
+                      </p>
+                      {/* <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">File Type:</span>
+                        <span>{item.file_type.toUpperCase() || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Row Count:</span>
+                        <span>{item.row_count || 'null'}</span>
+                      </p> */}
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Create Time:</span>
+                        <span>{item.created_at || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Updated Time:</span>
+                        <span>{item.updated_at || 'null'}</span>
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
-              )) || <p className="text-muted-foreground">No popular visualizations found.</p>
+              )) || <p className="text-muted-foreground">No recent activity found.</p>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {loading ? (
+              Array(6).fill(0).map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-32 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              stats?.allsets?.analytics.map((item: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-2xl">{item.name}</CardTitle>
+                    <CardDescription>{item.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="rounded-md p-4 bg-gray-50 dark:bg-gray-800 mb-4">
+                      <p className="text-xl font-semibold mb-3">Basic information:</p>
+                      {/* <p className="text-sm py-1 flex justify-between">
+                        <span className="font-medium">File Name:</span>
+                        <span>{parse(item.file_path) || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">File Type:</span>
+                        <span>{item.file_type.toUpperCase() || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Row Count:</span>
+                        <span>{item.row_count || 'null'}</span>
+                      </p> */}
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Create Time:</span>
+                        <span>{item.created_at || 'null'}</span>
+                      </p>
+                      <p className="text-sm py-1 flex justify-between border-t border-gray-200 dark:border-gray-700">
+                        <span className="font-medium">Updated Time:</span>
+                        <span>{item.updated_at || 'null'}</span>
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )) || <p className="text-muted-foreground">No recent activity found.</p>
             )}
           </div>
         </TabsContent>

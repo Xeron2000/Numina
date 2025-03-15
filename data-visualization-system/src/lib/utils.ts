@@ -22,3 +22,28 @@ export function formatDate(date: Date | string) {
     year: "numeric",
   });
 }
+
+export function permissions() {
+  const token = localStorage.getItem('auth_token') || null;
+  const user = localStorage.getItem('user') || null;
+  const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development'
+
+  if (token && user && !isDev){
+    return true
+  }else{
+    return false
+  }
+}
+
+export function recentData(items:[]){
+  if(items.length > 6){
+    return items.slice(-6).reverse()
+  }else{
+    return items.reverse()
+  }
+}
+
+export function parse(str:string){
+  const hashname = str.split('uploads/')[1]
+  return hashname.slice(36)
+}

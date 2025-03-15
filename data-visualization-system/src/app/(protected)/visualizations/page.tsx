@@ -30,9 +30,6 @@ export default function VisualizationsPage() {
         setLoading(true);
         const data = await fetchVisualizations({ query: debouncedSearch });
         setVisualizations(data);
-
-        const datasetsData = await fetchDatasets({});
-        setDatasets(datasetsData);
       } catch (error) {
         console.error("Failed to load visualizations:", error);
       } finally {

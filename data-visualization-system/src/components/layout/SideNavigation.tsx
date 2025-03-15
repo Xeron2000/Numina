@@ -12,6 +12,7 @@ import {
   Settings, 
   LogOut 
 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth"
 
 const navItems = [
   {
@@ -43,6 +44,7 @@ const navItems = [
 
 export function SideNavigation({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { logout } = useAuth();
 
   return (
     <div className={cn("pb-12 h-full flex flex-col", className)}>
@@ -69,7 +71,7 @@ export function SideNavigation({ className }: { className?: string }) {
         </div>
       </div>
       <div className="px-3 py-2 border-t">
-        <Button variant="ghost" className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-950/30">
+        <Button onClick={() => logout()} variant="ghost" className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-950/30">
           <LogOut className="h-4 w-4 mr-2" />
           Logout
         </Button>

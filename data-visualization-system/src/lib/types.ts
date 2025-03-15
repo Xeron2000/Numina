@@ -45,16 +45,6 @@ export interface SchemaField {
   description?: string;
 }
 
-export interface DatasetCreateParams {
-  name: string;
-  description?: string;
-  type: Dataset["type"];
-  source: string;
-  file?: File;
-  isPublic?: boolean;
-  tags?: string[];
-}
-
 // Visualization related types
 export interface Visualization {
   id: string;

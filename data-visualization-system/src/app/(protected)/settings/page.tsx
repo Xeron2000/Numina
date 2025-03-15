@@ -1,7 +1,7 @@
 // app/(protected)/settings/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,13 +10,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Toggle } from "@/components/ui/toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Lock, User, HelpCircle, Languages, Save, LogOut } from "lucide-react";
 
+interface UserInfo {
+  email: string;
+  username: string;
+  id: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
 export default function SettingsPage() {
-  const { user, isLoading } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ 直接初始化 user 和 initials
+  const [user, setUser] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+
+    const userString = localStorage.getItem("user");
+    if(userString){
+      setUser(JSON.parse(userString));
+      setLoading(false);
+    }
+    
+  },[])
 
   const handleSave = async () => {
     setSaving(true);
@@ -24,6 +46,8 @@ export default function SettingsPage() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setSaving(false);
   };
+
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -65,12 +89,12 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex-shrink-0">
-                  {isLoading ? (
+                  {loading ? (
                     <Skeleton className="h-20 w-20 rounded-full" />
                   ) : (
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src={user?.avatar} alt={user?.name} />
-                      <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
+                      <AvatarImage />
+                      <AvatarFallback className="text-3xl">{user?.username?.[0].toUpperCase()}</AvatarFallback>
                     </Avatar>
                   )}
                 </div>
@@ -92,25 +116,25 @@ export default function SettingsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                {isLoading ? (
+                {loading ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
-                  <Input id="name" defaultValue={user?.name} />
+                  <Input id="name" defaultValue={user?.username} />
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                {isLoading ? (
+                {loading ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
                   <Input id="email" defaultValue={user?.email} />
                 )}
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
-                {isLoading ? (
+                {loading ? (
                   <Skeleton className="h-20 w-full" />
                 ) : (
                   <textarea
@@ -120,7 +144,7 @@ export default function SettingsPage() {
                     placeholder="Enter your bio"
                   />
                 )}
-              </div>
+              </div> */}
 
               <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
@@ -217,7 +241,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Email Notifications</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Data Updates</p>
@@ -227,7 +251,7 @@ export default function SettingsPage() {
                   </div>
                   <Toggle aria-label="Toggle data updates" defaultChecked />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Visualization Updates</p>
@@ -237,7 +261,7 @@ export default function SettingsPage() {
                   </div>
                   <Toggle aria-label="Toggle visualization updates" defaultChecked />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">System Updates</p>
@@ -251,7 +275,7 @@ export default function SettingsPage() {
 
               <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-lg font-medium">In-App Notifications</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Data Processing Alerts</p>
@@ -261,7 +285,7 @@ export default function SettingsPage() {
                   </div>
                   <Toggle aria-label="Toggle data processing alerts" defaultChecked />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Collaboration Updates</p>
@@ -419,7 +443,7 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <textarea
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Share your thoughts or report an issue..."
+                    placeholder="Share your thoughts or report an issue..."
                   />
                   <Button>Submit Feedback</Button>
                 </div>
