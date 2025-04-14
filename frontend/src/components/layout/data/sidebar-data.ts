@@ -1,25 +1,18 @@
 import {
-  IconBarrierBlock,
   IconBrowserCheck,
-  IconBug,
-  IconChecklist,
-  IconError404,
+  IconDatabase,
   IconHelp,
   IconLayoutDashboard,
-  IconLock,
-  IconLockAccess,
-  IconMessages,
   IconNotification,
-  IconPackages,
   IconPalette,
-  IconServerOff,
   IconSettings,
   IconTool,
   IconUserCog,
-  IconUserOff,
-  IconUsers,
+  IconChartBar,
+  IconMap,
+  IconChartPie,
 } from '@tabler/icons-react'
-import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
+import { Command } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -28,157 +21,104 @@ export const sidebarData: SidebarData = {
     email: 'satnaingdev@gmail.com',
     avatar: '/avatars/shadcn.jpg',
   },
-  teams: [
-    {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Vite + ShadcnUI',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
-  ],
+  logo: {
+    icon: Command,
+    name: '空气质量监测平台'
+  },
   navGroups: [
     {
-      title: 'General',
+      title: '主要功能',
       items: [
         {
-          title: 'Dashboard',
+          title: '仪表盘',
           url: '/',
           icon: IconLayoutDashboard,
         },
         {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: IconChecklist,
+          title: '数据集',
+          url: '/apps/datasets',
+          icon: IconDatabase,
         },
         {
-          title: 'Apps',
-          url: '/apps',
-          icon: IconPackages,
+          title: '分析',
+          icon: IconChartBar,
+          items: [
+            {
+              title: '分析构建器',
+              url: '/apps/analytics/builder',
+            },
+            {
+              title: '历史记录',
+              url: '/apps/analytics/history',
+            }
+          ]
         },
         {
-          title: 'Chats',
-          url: '/chats',
-          badge: '3',
-          icon: IconMessages,
+          title: '可视化',
+          icon: IconChartPie,
+          url: '/apps/visualizations',
         },
         {
-          title: 'Users',
-          url: '/users',
-          icon: IconUsers,
+          title: '地理空间',
+          icon: IconMap,
+          items: [
+            {
+              title: '地图视图',
+              url: '/apps/geospatial/map',
+            },
+            {
+              title: '热力图',
+              url: '/apps/geospatial/heatmap',
+            },
+            {
+              title: '地理围栏',
+              url: '/apps/geospatial/fences',
+            }
+          ]
         },
       ],
     },
     {
-      title: 'Pages',
+      title: '系统设置',
       items: [
         {
-          title: 'Auth',
-          icon: IconLockAccess,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/sign-in',
-            },
-            {
-              title: 'Sign In (2 Col)',
-              url: '/sign-in-2',
-            },
-            {
-              title: 'Sign Up',
-              url: '/sign-up',
-            },
-            {
-              title: 'Forgot Password',
-              url: '/forgot-password',
-            },
-            {
-              title: 'OTP',
-              url: '/otp',
-            },
-          ],
-        },
-        {
-          title: 'Errors',
-          icon: IconBug,
-          items: [
-            {
-              title: 'Unauthorized',
-              url: '/401',
-              icon: IconLock,
-            },
-            {
-              title: 'Forbidden',
-              url: '/403',
-              icon: IconUserOff,
-            },
-            {
-              title: 'Not Found',
-              url: '/404',
-              icon: IconError404,
-            },
-            {
-              title: 'Internal Server Error',
-              url: '/500',
-              icon: IconServerOff,
-            },
-            {
-              title: 'Maintenance Error',
-              url: '/503',
-              icon: IconBarrierBlock,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Other',
-      items: [
-        {
-          title: 'Settings',
+          title: '设置',
           icon: IconSettings,
           items: [
             {
-              title: 'Profile',
+              title: '个人信息',
               url: '/settings',
               icon: IconUserCog,
             },
             {
-              title: 'Account',
+              title: '账户设置',
               url: '/settings/account',
               icon: IconTool,
             },
             {
-              title: 'Appearance',
+              title: '外观设置',
               url: '/settings/appearance',
               icon: IconPalette,
             },
             {
-              title: 'Notifications',
+              title: '通知设置',
               url: '/settings/notifications',
               icon: IconNotification,
             },
             {
-              title: 'Display',
+              title: '显示设置',
               url: '/settings/display',
               icon: IconBrowserCheck,
             },
           ],
         },
         {
-          title: 'Help Center',
+          title: '帮助中心',
           url: '/help-center',
           icon: IconHelp,
         },
       ],
     },
   ],
+  teams: []
 }

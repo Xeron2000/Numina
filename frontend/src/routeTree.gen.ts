@@ -18,6 +18,7 @@ import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 import { Route as authOtpImport } from './routes/(auth)/otp'
 import { Route as auth500Import } from './routes/(auth)/500'
+import { Route as AuthenticatedAppsVisualizationsIndexImport } from './routes/_authenticated/apps/visualizations/index'
 
 // Create Virtual Routes
 
@@ -63,6 +64,42 @@ const AuthenticatedSettingsAppearanceLazyImport = createFileRoute(
 )()
 const AuthenticatedSettingsAccountLazyImport = createFileRoute(
   '/_authenticated/settings/account',
+)()
+const AuthenticatedAppsDatasetsIndexLazyImport = createFileRoute(
+  '/_authenticated/apps/datasets/',
+)()
+const AuthenticatedAppsVisualizationsCreateLazyImport = createFileRoute(
+  '/_authenticated/apps/visualizations/create',
+)()
+const AuthenticatedAppsGeospatialMapLazyImport = createFileRoute(
+  '/_authenticated/apps/geospatial/map',
+)()
+const AuthenticatedAppsGeospatialHeatmapLazyImport = createFileRoute(
+  '/_authenticated/apps/geospatial/heatmap',
+)()
+const AuthenticatedAppsGeospatialFencesLazyImport = createFileRoute(
+  '/_authenticated/apps/geospatial/fences',
+)()
+const AuthenticatedAppsDatasetsUploadLazyImport = createFileRoute(
+  '/_authenticated/apps/datasets/upload',
+)()
+const AuthenticatedAppsDatasetsIdLazyImport = createFileRoute(
+  '/_authenticated/apps/datasets/$id',
+)()
+const AuthenticatedAppsAnalyticsHistoryLazyImport = createFileRoute(
+  '/_authenticated/apps/analytics/history',
+)()
+const AuthenticatedAppsAnalyticsBuilderLazyImport = createFileRoute(
+  '/_authenticated/apps/analytics/builder',
+)()
+const AuthenticatedAppsAnalyticsIdLazyImport = createFileRoute(
+  '/_authenticated/apps/analytics/$id',
+)()
+const AuthenticatedAppsVisualizationsIdViewLazyImport = createFileRoute(
+  '/_authenticated/apps/visualizations/$id/view',
+)()
+const AuthenticatedAppsVisualizationsIdEditLazyImport = createFileRoute(
+  '/_authenticated/apps/visualizations/$id/edit',
 )()
 
 // Create/Update Routes
@@ -272,6 +309,149 @@ const AuthenticatedSettingsAccountLazyRoute =
     ),
   )
 
+const AuthenticatedAppsDatasetsIndexLazyRoute =
+  AuthenticatedAppsDatasetsIndexLazyImport.update({
+    id: '/apps/datasets/',
+    path: '/apps/datasets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/datasets/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsVisualizationsIndexRoute =
+  AuthenticatedAppsVisualizationsIndexImport.update({
+    id: '/apps/visualizations/',
+    path: '/apps/visualizations/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/visualizations/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsVisualizationsCreateLazyRoute =
+  AuthenticatedAppsVisualizationsCreateLazyImport.update({
+    id: '/apps/visualizations/create',
+    path: '/apps/visualizations/create',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/visualizations/create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsGeospatialMapLazyRoute =
+  AuthenticatedAppsGeospatialMapLazyImport.update({
+    id: '/apps/geospatial/map',
+    path: '/apps/geospatial/map',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/geospatial/map.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsGeospatialHeatmapLazyRoute =
+  AuthenticatedAppsGeospatialHeatmapLazyImport.update({
+    id: '/apps/geospatial/heatmap',
+    path: '/apps/geospatial/heatmap',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/geospatial/heatmap.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsGeospatialFencesLazyRoute =
+  AuthenticatedAppsGeospatialFencesLazyImport.update({
+    id: '/apps/geospatial/fences',
+    path: '/apps/geospatial/fences',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/geospatial/fences.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsDatasetsUploadLazyRoute =
+  AuthenticatedAppsDatasetsUploadLazyImport.update({
+    id: '/apps/datasets/upload',
+    path: '/apps/datasets/upload',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/datasets/upload.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsDatasetsIdLazyRoute =
+  AuthenticatedAppsDatasetsIdLazyImport.update({
+    id: '/apps/datasets/$id',
+    path: '/apps/datasets/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/datasets/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsAnalyticsHistoryLazyRoute =
+  AuthenticatedAppsAnalyticsHistoryLazyImport.update({
+    id: '/apps/analytics/history',
+    path: '/apps/analytics/history',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/analytics/history.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsAnalyticsBuilderLazyRoute =
+  AuthenticatedAppsAnalyticsBuilderLazyImport.update({
+    id: '/apps/analytics/builder',
+    path: '/apps/analytics/builder',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/analytics/builder.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsAnalyticsIdLazyRoute =
+  AuthenticatedAppsAnalyticsIdLazyImport.update({
+    id: '/apps/analytics/$id',
+    path: '/apps/analytics/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/analytics/$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsVisualizationsIdViewLazyRoute =
+  AuthenticatedAppsVisualizationsIdViewLazyImport.update({
+    id: '/apps/visualizations/$id/view',
+    path: '/apps/visualizations/$id/view',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/visualizations/$id/view.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsVisualizationsIdEditLazyRoute =
+  AuthenticatedAppsVisualizationsIdEditLazyImport.update({
+    id: '/apps/visualizations/$id/edit',
+    path: '/apps/visualizations/$id/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/visualizations/$id/edit.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -444,6 +624,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexLazyImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/apps/analytics/$id': {
+      id: '/_authenticated/apps/analytics/$id'
+      path: '/apps/analytics/$id'
+      fullPath: '/apps/analytics/$id'
+      preLoaderRoute: typeof AuthenticatedAppsAnalyticsIdLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/analytics/builder': {
+      id: '/_authenticated/apps/analytics/builder'
+      path: '/apps/analytics/builder'
+      fullPath: '/apps/analytics/builder'
+      preLoaderRoute: typeof AuthenticatedAppsAnalyticsBuilderLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/analytics/history': {
+      id: '/_authenticated/apps/analytics/history'
+      path: '/apps/analytics/history'
+      fullPath: '/apps/analytics/history'
+      preLoaderRoute: typeof AuthenticatedAppsAnalyticsHistoryLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/datasets/$id': {
+      id: '/_authenticated/apps/datasets/$id'
+      path: '/apps/datasets/$id'
+      fullPath: '/apps/datasets/$id'
+      preLoaderRoute: typeof AuthenticatedAppsDatasetsIdLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/datasets/upload': {
+      id: '/_authenticated/apps/datasets/upload'
+      path: '/apps/datasets/upload'
+      fullPath: '/apps/datasets/upload'
+      preLoaderRoute: typeof AuthenticatedAppsDatasetsUploadLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/geospatial/fences': {
+      id: '/_authenticated/apps/geospatial/fences'
+      path: '/apps/geospatial/fences'
+      fullPath: '/apps/geospatial/fences'
+      preLoaderRoute: typeof AuthenticatedAppsGeospatialFencesLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/geospatial/heatmap': {
+      id: '/_authenticated/apps/geospatial/heatmap'
+      path: '/apps/geospatial/heatmap'
+      fullPath: '/apps/geospatial/heatmap'
+      preLoaderRoute: typeof AuthenticatedAppsGeospatialHeatmapLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/geospatial/map': {
+      id: '/_authenticated/apps/geospatial/map'
+      path: '/apps/geospatial/map'
+      fullPath: '/apps/geospatial/map'
+      preLoaderRoute: typeof AuthenticatedAppsGeospatialMapLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/visualizations/create': {
+      id: '/_authenticated/apps/visualizations/create'
+      path: '/apps/visualizations/create'
+      fullPath: '/apps/visualizations/create'
+      preLoaderRoute: typeof AuthenticatedAppsVisualizationsCreateLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/visualizations/': {
+      id: '/_authenticated/apps/visualizations/'
+      path: '/apps/visualizations'
+      fullPath: '/apps/visualizations'
+      preLoaderRoute: typeof AuthenticatedAppsVisualizationsIndexImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/datasets/': {
+      id: '/_authenticated/apps/datasets/'
+      path: '/apps/datasets'
+      fullPath: '/apps/datasets'
+      preLoaderRoute: typeof AuthenticatedAppsDatasetsIndexLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/visualizations/$id/edit': {
+      id: '/_authenticated/apps/visualizations/$id/edit'
+      path: '/apps/visualizations/$id/edit'
+      fullPath: '/apps/visualizations/$id/edit'
+      preLoaderRoute: typeof AuthenticatedAppsVisualizationsIdEditLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/apps/visualizations/$id/view': {
+      id: '/_authenticated/apps/visualizations/$id/view'
+      path: '/apps/visualizations/$id/view'
+      fullPath: '/apps/visualizations/$id/view'
+      preLoaderRoute: typeof AuthenticatedAppsVisualizationsIdViewLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
   }
 }
 
@@ -483,6 +754,19 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
   AuthenticatedTasksIndexLazyRoute: typeof AuthenticatedTasksIndexLazyRoute
   AuthenticatedUsersIndexLazyRoute: typeof AuthenticatedUsersIndexLazyRoute
+  AuthenticatedAppsAnalyticsIdLazyRoute: typeof AuthenticatedAppsAnalyticsIdLazyRoute
+  AuthenticatedAppsAnalyticsBuilderLazyRoute: typeof AuthenticatedAppsAnalyticsBuilderLazyRoute
+  AuthenticatedAppsAnalyticsHistoryLazyRoute: typeof AuthenticatedAppsAnalyticsHistoryLazyRoute
+  AuthenticatedAppsDatasetsIdLazyRoute: typeof AuthenticatedAppsDatasetsIdLazyRoute
+  AuthenticatedAppsDatasetsUploadLazyRoute: typeof AuthenticatedAppsDatasetsUploadLazyRoute
+  AuthenticatedAppsGeospatialFencesLazyRoute: typeof AuthenticatedAppsGeospatialFencesLazyRoute
+  AuthenticatedAppsGeospatialHeatmapLazyRoute: typeof AuthenticatedAppsGeospatialHeatmapLazyRoute
+  AuthenticatedAppsGeospatialMapLazyRoute: typeof AuthenticatedAppsGeospatialMapLazyRoute
+  AuthenticatedAppsVisualizationsCreateLazyRoute: typeof AuthenticatedAppsVisualizationsCreateLazyRoute
+  AuthenticatedAppsVisualizationsIndexRoute: typeof AuthenticatedAppsVisualizationsIndexRoute
+  AuthenticatedAppsDatasetsIndexLazyRoute: typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  AuthenticatedAppsVisualizationsIdEditLazyRoute: typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
+  AuthenticatedAppsVisualizationsIdViewLazyRoute: typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -494,6 +778,30 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHelpCenterIndexLazyRoute: AuthenticatedHelpCenterIndexLazyRoute,
   AuthenticatedTasksIndexLazyRoute: AuthenticatedTasksIndexLazyRoute,
   AuthenticatedUsersIndexLazyRoute: AuthenticatedUsersIndexLazyRoute,
+  AuthenticatedAppsAnalyticsIdLazyRoute: AuthenticatedAppsAnalyticsIdLazyRoute,
+  AuthenticatedAppsAnalyticsBuilderLazyRoute:
+    AuthenticatedAppsAnalyticsBuilderLazyRoute,
+  AuthenticatedAppsAnalyticsHistoryLazyRoute:
+    AuthenticatedAppsAnalyticsHistoryLazyRoute,
+  AuthenticatedAppsDatasetsIdLazyRoute: AuthenticatedAppsDatasetsIdLazyRoute,
+  AuthenticatedAppsDatasetsUploadLazyRoute:
+    AuthenticatedAppsDatasetsUploadLazyRoute,
+  AuthenticatedAppsGeospatialFencesLazyRoute:
+    AuthenticatedAppsGeospatialFencesLazyRoute,
+  AuthenticatedAppsGeospatialHeatmapLazyRoute:
+    AuthenticatedAppsGeospatialHeatmapLazyRoute,
+  AuthenticatedAppsGeospatialMapLazyRoute:
+    AuthenticatedAppsGeospatialMapLazyRoute,
+  AuthenticatedAppsVisualizationsCreateLazyRoute:
+    AuthenticatedAppsVisualizationsCreateLazyRoute,
+  AuthenticatedAppsVisualizationsIndexRoute:
+    AuthenticatedAppsVisualizationsIndexRoute,
+  AuthenticatedAppsDatasetsIndexLazyRoute:
+    AuthenticatedAppsDatasetsIndexLazyRoute,
+  AuthenticatedAppsVisualizationsIdEditLazyRoute:
+    AuthenticatedAppsVisualizationsIdEditLazyRoute,
+  AuthenticatedAppsVisualizationsIdViewLazyRoute:
+    AuthenticatedAppsVisualizationsIdViewLazyRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -523,6 +831,19 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexLazyRoute
   '/tasks': typeof AuthenticatedTasksIndexLazyRoute
   '/users': typeof AuthenticatedUsersIndexLazyRoute
+  '/apps/analytics/$id': typeof AuthenticatedAppsAnalyticsIdLazyRoute
+  '/apps/analytics/builder': typeof AuthenticatedAppsAnalyticsBuilderLazyRoute
+  '/apps/analytics/history': typeof AuthenticatedAppsAnalyticsHistoryLazyRoute
+  '/apps/datasets/$id': typeof AuthenticatedAppsDatasetsIdLazyRoute
+  '/apps/datasets/upload': typeof AuthenticatedAppsDatasetsUploadLazyRoute
+  '/apps/geospatial/fences': typeof AuthenticatedAppsGeospatialFencesLazyRoute
+  '/apps/geospatial/heatmap': typeof AuthenticatedAppsGeospatialHeatmapLazyRoute
+  '/apps/geospatial/map': typeof AuthenticatedAppsGeospatialMapLazyRoute
+  '/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
+  '/apps/visualizations': typeof AuthenticatedAppsVisualizationsIndexRoute
+  '/apps/datasets': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
+  '/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
 
 export interface FileRoutesByTo {
@@ -547,6 +868,19 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexLazyRoute
   '/tasks': typeof AuthenticatedTasksIndexLazyRoute
   '/users': typeof AuthenticatedUsersIndexLazyRoute
+  '/apps/analytics/$id': typeof AuthenticatedAppsAnalyticsIdLazyRoute
+  '/apps/analytics/builder': typeof AuthenticatedAppsAnalyticsBuilderLazyRoute
+  '/apps/analytics/history': typeof AuthenticatedAppsAnalyticsHistoryLazyRoute
+  '/apps/datasets/$id': typeof AuthenticatedAppsDatasetsIdLazyRoute
+  '/apps/datasets/upload': typeof AuthenticatedAppsDatasetsUploadLazyRoute
+  '/apps/geospatial/fences': typeof AuthenticatedAppsGeospatialFencesLazyRoute
+  '/apps/geospatial/heatmap': typeof AuthenticatedAppsGeospatialHeatmapLazyRoute
+  '/apps/geospatial/map': typeof AuthenticatedAppsGeospatialMapLazyRoute
+  '/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
+  '/apps/visualizations': typeof AuthenticatedAppsVisualizationsIndexRoute
+  '/apps/datasets': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
+  '/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
 
 export interface FileRoutesById {
@@ -575,6 +909,19 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexLazyRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexLazyRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexLazyRoute
+  '/_authenticated/apps/analytics/$id': typeof AuthenticatedAppsAnalyticsIdLazyRoute
+  '/_authenticated/apps/analytics/builder': typeof AuthenticatedAppsAnalyticsBuilderLazyRoute
+  '/_authenticated/apps/analytics/history': typeof AuthenticatedAppsAnalyticsHistoryLazyRoute
+  '/_authenticated/apps/datasets/$id': typeof AuthenticatedAppsDatasetsIdLazyRoute
+  '/_authenticated/apps/datasets/upload': typeof AuthenticatedAppsDatasetsUploadLazyRoute
+  '/_authenticated/apps/geospatial/fences': typeof AuthenticatedAppsGeospatialFencesLazyRoute
+  '/_authenticated/apps/geospatial/heatmap': typeof AuthenticatedAppsGeospatialHeatmapLazyRoute
+  '/_authenticated/apps/geospatial/map': typeof AuthenticatedAppsGeospatialMapLazyRoute
+  '/_authenticated/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
+  '/_authenticated/apps/visualizations/': typeof AuthenticatedAppsVisualizationsIndexRoute
+  '/_authenticated/apps/datasets/': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/_authenticated/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
+  '/_authenticated/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
 
 export interface FileRouteTypes {
@@ -603,6 +950,19 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/apps/analytics/$id'
+    | '/apps/analytics/builder'
+    | '/apps/analytics/history'
+    | '/apps/datasets/$id'
+    | '/apps/datasets/upload'
+    | '/apps/geospatial/fences'
+    | '/apps/geospatial/heatmap'
+    | '/apps/geospatial/map'
+    | '/apps/visualizations/create'
+    | '/apps/visualizations'
+    | '/apps/datasets'
+    | '/apps/visualizations/$id/edit'
+    | '/apps/visualizations/$id/view'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/500'
@@ -626,6 +986,19 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/apps/analytics/$id'
+    | '/apps/analytics/builder'
+    | '/apps/analytics/history'
+    | '/apps/datasets/$id'
+    | '/apps/datasets/upload'
+    | '/apps/geospatial/fences'
+    | '/apps/geospatial/heatmap'
+    | '/apps/geospatial/map'
+    | '/apps/visualizations/create'
+    | '/apps/visualizations'
+    | '/apps/datasets'
+    | '/apps/visualizations/$id/edit'
+    | '/apps/visualizations/$id/view'
   id:
     | '__root__'
     | '/_authenticated'
@@ -652,6 +1025,19 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/apps/analytics/$id'
+    | '/_authenticated/apps/analytics/builder'
+    | '/_authenticated/apps/analytics/history'
+    | '/_authenticated/apps/datasets/$id'
+    | '/_authenticated/apps/datasets/upload'
+    | '/_authenticated/apps/geospatial/fences'
+    | '/_authenticated/apps/geospatial/heatmap'
+    | '/_authenticated/apps/geospatial/map'
+    | '/_authenticated/apps/visualizations/create'
+    | '/_authenticated/apps/visualizations/'
+    | '/_authenticated/apps/datasets/'
+    | '/_authenticated/apps/visualizations/$id/edit'
+    | '/_authenticated/apps/visualizations/$id/view'
   fileRoutesById: FileRoutesById
 }
 
@@ -718,7 +1104,20 @@ export const routeTree = rootRoute
         "/_authenticated/chats/",
         "/_authenticated/help-center/",
         "/_authenticated/tasks/",
-        "/_authenticated/users/"
+        "/_authenticated/users/",
+        "/_authenticated/apps/analytics/$id",
+        "/_authenticated/apps/analytics/builder",
+        "/_authenticated/apps/analytics/history",
+        "/_authenticated/apps/datasets/$id",
+        "/_authenticated/apps/datasets/upload",
+        "/_authenticated/apps/geospatial/fences",
+        "/_authenticated/apps/geospatial/heatmap",
+        "/_authenticated/apps/geospatial/map",
+        "/_authenticated/apps/visualizations/create",
+        "/_authenticated/apps/visualizations/",
+        "/_authenticated/apps/datasets/",
+        "/_authenticated/apps/visualizations/$id/edit",
+        "/_authenticated/apps/visualizations/$id/view"
       ]
     },
     "/(auth)/500": {
@@ -807,6 +1206,58 @@ export const routeTree = rootRoute
     },
     "/_authenticated/users/": {
       "filePath": "_authenticated/users/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/analytics/$id": {
+      "filePath": "_authenticated/apps/analytics/$id.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/analytics/builder": {
+      "filePath": "_authenticated/apps/analytics/builder.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/analytics/history": {
+      "filePath": "_authenticated/apps/analytics/history.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/datasets/$id": {
+      "filePath": "_authenticated/apps/datasets/$id.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/datasets/upload": {
+      "filePath": "_authenticated/apps/datasets/upload.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/geospatial/fences": {
+      "filePath": "_authenticated/apps/geospatial/fences.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/geospatial/heatmap": {
+      "filePath": "_authenticated/apps/geospatial/heatmap.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/geospatial/map": {
+      "filePath": "_authenticated/apps/geospatial/map.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/visualizations/create": {
+      "filePath": "_authenticated/apps/visualizations/create.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/visualizations/": {
+      "filePath": "_authenticated/apps/visualizations/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/datasets/": {
+      "filePath": "_authenticated/apps/datasets/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/visualizations/$id/edit": {
+      "filePath": "_authenticated/apps/visualizations/$id/edit.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/visualizations/$id/view": {
+      "filePath": "_authenticated/apps/visualizations/$id/view.lazy.tsx",
       "parent": "/_authenticated"
     }
   }
