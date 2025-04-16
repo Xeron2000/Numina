@@ -32,31 +32,31 @@ import {
 } from '@/components/ui/popover'
 
 const languages = [
-  { label: 'English', value: 'en' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
+  { label: '英语', value: 'en' },
+  { label: '法语', value: 'fr' },
+  { label: '德语', value: 'de' },
+  { label: '西班牙语', value: 'es' },
+  { label: '葡萄牙语', value: 'pt' },
+  { label: '俄语', value: 'ru' },
+  { label: '日语', value: 'ja' },
+  { label: '韩语', value: 'ko' },
+  { label: '中文', value: 'zh' },
 ] as const
 
 const accountFormSchema = z.object({
   name: z
     .string()
     .min(2, {
-      message: 'Name must be at least 2 characters.',
+      message: '姓名至少需要2个字符。',
     })
     .max(30, {
-      message: 'Name must not be longer than 30 characters.',
+      message: '姓名不能超过30个字符。',
     }),
   dob: z.date({
-    required_error: 'A date of birth is required.',
+    required_error: '请选择出生日期。',
   }),
   language: z.string({
-    required_error: 'Please select a language.',
+    required_error: '请选择语言。',
   }),
 })
 
@@ -75,7 +75,7 @@ export function AccountForm() {
 
   function onSubmit(data: AccountFormValues) {
     toast({
-      title: 'You submitted the following values:',
+      title: '您提交了以下内容：',
       description: (
         <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
           <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
@@ -92,13 +92,12 @@ export function AccountForm() {
           name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>姓名</FormLabel>
               <FormControl>
-                <Input placeholder='Your name' {...field} />
+                <Input placeholder='输入您的姓名' {...field} />
               </FormControl>
               <FormDescription>
-                This is the name that will be displayed on your profile and in
-                emails.
+                这是您的显示名称。
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -109,7 +108,7 @@ export function AccountForm() {
           name='dob'
           render={({ field }) => (
             <FormItem className='flex flex-col'>
-              <FormLabel>Date of birth</FormLabel>
+              <FormLabel>出生日期</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -121,9 +120,9 @@ export function AccountForm() {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, 'MMM d, yyyy')
+                        format(field.value, 'yyyy年MM月dd日')
                       ) : (
-                        <span>Pick a date</span>
+                        <span>选择日期</span>
                       )}
                       <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                     </Button>
@@ -141,7 +140,7 @@ export function AccountForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Your date of birth is used to calculate your age.
+                您的出生日期将用于计算年龄。
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -204,13 +203,13 @@ export function AccountForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                This is the language that will be used in the dashboard.
+                这是您在应用中看到的语言。
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type='submit'>Update account</Button>
+        <Button type='submit'>保存账户设置</Button>
       </form>
     </Form>
   )

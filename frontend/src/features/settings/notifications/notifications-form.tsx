@@ -19,7 +19,7 @@ import { Switch } from '@/components/ui/switch'
 
 const notificationsFormSchema = z.object({
   type: z.enum(['all', 'mentions', 'none'], {
-    required_error: 'You need to select a notification type.',
+    required_error: '请选择一个通知类型。',
   }),
   mobile: z.boolean().default(false).optional(),
   communication_emails: z.boolean().default(false).optional(),
@@ -46,7 +46,7 @@ export function NotificationsForm() {
 
   function onSubmit(data: NotificationsFormValues) {
     toast({
-      title: 'You submitted the following values:',
+      title: '您提交了以下设置：',
       description: (
         <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
           <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
@@ -63,7 +63,7 @@ export function NotificationsForm() {
           name='type'
           render={({ field }) => (
             <FormItem className='relative space-y-3'>
-              <FormLabel>Notify me about...</FormLabel>
+              <FormLabel>通知提醒范围...</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -75,7 +75,7 @@ export function NotificationsForm() {
                       <RadioGroupItem value='all' />
                     </FormControl>
                     <FormLabel className='font-normal'>
-                      All new messages
+                      所有新消息
                     </FormLabel>
                   </FormItem>
                   <FormItem className='flex items-center space-x-3 space-y-0'>
@@ -83,14 +83,14 @@ export function NotificationsForm() {
                       <RadioGroupItem value='mentions' />
                     </FormControl>
                     <FormLabel className='font-normal'>
-                      Direct messages and mentions
+                      直接消息和提及
                     </FormLabel>
                   </FormItem>
                   <FormItem className='flex items-center space-x-3 space-y-0'>
                     <FormControl>
                       <RadioGroupItem value='none' />
                     </FormControl>
-                    <FormLabel className='font-normal'>Nothing</FormLabel>
+                    <FormLabel className='font-normal'>不接收通知</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -99,7 +99,7 @@ export function NotificationsForm() {
           )}
         />
         <div className='relative'>
-          <h3 className='mb-4 text-lg font-medium'>Email Notifications</h3>
+          <h3 className='mb-4 text-lg font-medium'>邮件通知</h3>
           <div className='space-y-4'>
             <FormField
               control={form.control}
@@ -108,10 +108,10 @@ export function NotificationsForm() {
                 <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                   <div className='space-y-0.5'>
                     <FormLabel className='text-base'>
-                      Communication emails
+                      通信邮件
                     </FormLabel>
                     <FormDescription>
-                      Receive emails about your account activity.
+                      接收有关您的账户活动的邮件通知。
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -130,10 +130,10 @@ export function NotificationsForm() {
                 <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                   <div className='space-y-0.5'>
                     <FormLabel className='text-base'>
-                      Marketing emails
+                      营销邮件
                     </FormLabel>
                     <FormDescription>
-                      Receive emails about new products, features, and more.
+                      接收有关新产品、功能和更新的邮件。
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -151,9 +151,9 @@ export function NotificationsForm() {
               render={({ field }) => (
                 <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                   <div className='space-y-0.5'>
-                    <FormLabel className='text-base'>Social emails</FormLabel>
+                    <FormLabel className='text-base'>社交邮件</FormLabel>
                     <FormDescription>
-                      Receive emails for friend requests, follows, and more.
+                      接收好友请求、关注等社交活动的邮件。
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -164,16 +164,16 @@ export function NotificationsForm() {
                   </FormControl>
                 </FormItem>
               )}
-            />
+              />
             <FormField
               control={form.control}
               name='security_emails'
               render={({ field }) => (
                 <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
                   <div className='space-y-0.5'>
-                    <FormLabel className='text-base'>Security emails</FormLabel>
+                    <FormLabel className='text-base'>安全邮件</FormLabel>
                     <FormDescription>
-                      Receive emails about your account activity and security.
+                      接收有关您的账户活动和安全的邮件。
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -202,23 +202,23 @@ export function NotificationsForm() {
               </FormControl>
               <div className='space-y-1 leading-none'>
                 <FormLabel>
-                  Use different settings for my mobile devices
+                  为移动设备使用不同的设置
                 </FormLabel>
                 <FormDescription>
-                  You can manage your mobile notifications in the{' '}
+                  您可以在{' '}
                   <Link
                     to='/settings'
                     className='underline decoration-dashed underline-offset-4 hover:decoration-solid'
                   >
-                    mobile settings
+                    移动设置
                   </Link>{' '}
-                  page.
+                  页面管理您的移动通知。
                 </FormDescription>
               </div>
             </FormItem>
           )}
         />
-        <Button type='submit'>Update notifications</Button>
+        <Button type='submit'>更新通知设置</Button>
       </form>
     </Form>
   )

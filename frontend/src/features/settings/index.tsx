@@ -17,7 +17,6 @@ import SidebarNav from './components/sidebar-nav'
 export default function Settings() {
   return (
     <>
-      {/* ===== Top Heading ===== */}
       <Header>
         <Search />
         <div className='ml-auto flex items-center space-x-4'>
@@ -29,10 +28,10 @@ export default function Settings() {
       <Main fixed>
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
-            Settings
+            系统设置
           </h1>
           <p className='text-muted-foreground'>
-            Manage your account settings and set e-mail preferences.
+            管理您的账户设置和电子邮件首选项。
           </p>
         </div>
         <Separator className='my-4 lg:my-6' />
@@ -51,27 +50,27 @@ export default function Settings() {
 
 const sidebarNavItems = [
   {
-    title: 'Profile',
+    title: '个人资料',
     icon: <IconUser size={18} />,
     href: '/settings',
   },
   {
-    title: 'Account',
+    title: '账户设置',
     icon: <IconTool size={18} />,
     href: '/settings/account',
   },
   {
-    title: 'Appearance',
+    title: '外观设置',
     icon: <IconPalette size={18} />,
     href: '/settings/appearance',
   },
   {
-    title: 'Notifications',
+    title: '通知设置',
     icon: <IconNotification size={18} />,
     href: '/settings/notifications',
   },
   {
-    title: 'Display',
+    title: '显示设置',
     icon: <IconBrowserCheck size={18} />,
     href: '/settings/display',
   },

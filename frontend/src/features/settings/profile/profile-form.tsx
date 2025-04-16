@@ -28,21 +28,21 @@ const profileFormSchema = z.object({
   username: z
     .string()
     .min(2, {
-      message: 'Username must be at least 2 characters.',
+      message: '用户名至少需要2个字符。',
     })
     .max(30, {
-      message: 'Username must not be longer than 30 characters.',
+      message: '用户名不能超过30个字符。',
     }),
   email: z
     .string({
-      required_error: 'Please select an email to display.',
+      required_error: '请选择要显示的邮箱。',
     })
     .email(),
   bio: z.string().max(160).min(4),
   urls: z
     .array(
       z.object({
-        value: z.string().url({ message: 'Please enter a valid URL.' }),
+        value: z.string().url({ message: '请输入有效的URL。' }),
       })
     )
     .optional(),
@@ -52,7 +52,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 // This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {
-  bio: 'I own a computer.',
+  bio: '我是一名计算机爱好者。',
   urls: [
     { value: 'https://shadcn.com' },
     { value: 'http://twitter.com/shadcn' },
@@ -73,7 +73,7 @@ export default function ProfileForm() {
 
   function onSubmit(data: ProfileFormValues) {
     toast({
-      title: 'You submitted the following values:',
+      title: '您提交了以下内容：',
       description: (
         <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
           <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
@@ -90,13 +90,12 @@ export default function ProfileForm() {
           name='username'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>用户名</FormLabel>
               <FormControl>
-                <Input placeholder='shadcn' {...field} />
+                <Input placeholder='请输入用户名' {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
+                这是您的公开显示名称。可以是真实姓名或昵称。每30天只能更改一次。
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -107,11 +106,11 @@ export default function ProfileForm() {
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>邮箱</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder='Select a verified email to display' />
+                    <SelectValue placeholder='选择要显示的已验证邮箱' />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -121,8 +120,7 @@ export default function ProfileForm() {
                 </SelectContent>
               </Select>
               <FormDescription>
-                You can manage verified email addresses in your{' '}
-                <Link to='/'>email settings</Link>.
+                您可以在<Link to='/settings/account'>邮箱设置</Link>中管理已验证的邮箱地址。
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -133,17 +131,16 @@ export default function ProfileForm() {
           name='bio'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel>个人简介</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder='Tell us a little bit about yourself'
+                  placeholder='介绍一下你自己'
                   className='resize-none'
                   {...field}
                 />
               </FormControl>
               <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
+                您可以使用<span>@用户名</span>来提及其他用户和组织。
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -158,10 +155,10 @@ export default function ProfileForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={cn(index !== 0 && 'sr-only')}>
-                    URLs
+                    链接
                   </FormLabel>
                   <FormDescription className={cn(index !== 0 && 'sr-only')}>
-                    Add links to your website, blog, or social media profiles.
+                    添加您的网站、博客或社交媒体资料链接。
                   </FormDescription>
                   <FormControl>
                     <Input {...field} />
@@ -178,10 +175,10 @@ export default function ProfileForm() {
             className='mt-2'
             onClick={() => append({ value: '' })}
           >
-            Add URL
+            添加链接
           </Button>
         </div>
-        <Button type='submit'>Update profile</Button>
+        <Button type='submit'>更新个人资料</Button>
       </form>
     </Form>
   )

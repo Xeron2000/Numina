@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,33 +16,33 @@ import {
 const items = [
   {
     id: 'recents',
-    label: 'Recents',
+    label: '最近使用',
   },
   {
     id: 'home',
-    label: 'Home',
+    label: '主页',
   },
   {
     id: 'applications',
-    label: 'Applications',
+    label: '应用程序',
   },
   {
     id: 'desktop',
-    label: 'Desktop',
+    label: '桌面',
   },
   {
     id: 'downloads',
-    label: 'Downloads',
+    label: '下载',
   },
   {
     id: 'documents',
-    label: 'Documents',
+    label: '文档',
   },
 ] as const
 
 const displayFormSchema = z.object({
   items: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: 'You have to select at least one item.',
+    message: '请至少选择一个显示项。',
   }),
 })
 
@@ -74,55 +73,54 @@ export function DisplayForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-        <FormField
-          control={form.control}
-          name='items'
-          render={() => (
-            <FormItem>
-              <div className='mb-4'>
-                <FormLabel className='text-base'>Sidebar</FormLabel>
-                <FormDescription>
-                  Select the items you want to display in the sidebar.
-                </FormDescription>
-              </div>
-              {items.map((item) => (
-                <FormField
-                  key={item.id}
-                  control={form.control}
-                  name='items'
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={item.id}
-                        className='flex flex-row items-start space-x-3 space-y-0'
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, item.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item.id
-                                    )
-                                  )
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className='font-normal'>
-                          {item.label}
-                        </FormLabel>
-                      </FormItem>
-                    )
-                  }}
-                />
-              ))}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type='submit'>Update display</Button>
+        <div>
+          <h3 className='mb-4 text-lg font-medium'>显示项目</h3>
+          <div className='space-y-4'>
+            <FormField
+              control={form.control}
+              name='items'
+              render={() => (
+                <FormItem>
+                  {items.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name='items'
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={item.id}
+                            className='flex flex-row items-start space-x-3 space-y-0'
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...field.value, item.id])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                          (value) => value !== item.id
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className='font-normal'>
+                              {item.label}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+        <Button type='submit'>保存显示设置</Button>
       </form>
     </Form>
   )
