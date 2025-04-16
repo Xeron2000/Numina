@@ -5,7 +5,6 @@ import {
   IconChartPie,
   IconMap,
   IconSettings,
-  IconHelp,
 } from '@tabler/icons-react'
 import { Command } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -46,6 +45,11 @@ export const sidebarData: SidebarData = {
             {
               title: '上传数据集',
               url: '/apps/datasets/upload',
+            },
+            {
+              title: '数据集详情',
+              url: '/apps/datasets/$id',
+              hidden: true,
             }
           ]
         },
@@ -60,6 +64,11 @@ export const sidebarData: SidebarData = {
             {
               title: '分析记录',
               url: '/apps/analytics/history',
+            },
+            {
+              title: '分析详情',
+              url: '/apps/analytics/$id', // Changed from :id to $id
+              hidden: true,
             }
           ]
         },
@@ -74,6 +83,16 @@ export const sidebarData: SidebarData = {
             {
               title: '创建可视化',
               url: '/apps/visualizations/create',
+            },
+            {
+              title: '可视化详情',
+              url: '/apps/visualizations/$id/view', // Changed from :id to $id
+              hidden: true,
+            },
+            {
+              title: '编辑可视化',
+              url: '/apps/visualizations/$id/edit', // Changed from :id to $id
+              hidden: true,
             }
           ]
         },
@@ -126,11 +145,6 @@ export const sidebarData: SidebarData = {
               url: '/settings/notifications',
             }
           ]
-        },
-        {
-          title: '帮助文档',
-          url: '/help-center',
-          icon: IconHelp,
         },
       ],
     },

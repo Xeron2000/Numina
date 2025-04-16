@@ -6,10 +6,14 @@ export type AppRoute =
   | '/dashboard'
   | '/apps/datasets'
   | '/apps/datasets/upload'
+  | '/apps/datasets/$id'  // Changed from :id to $id to match TanStack Router
   | '/apps/analytics/builder'
   | '/apps/analytics/history'
+  | '/apps/analytics/$id'
   | '/apps/visualizations'
   | '/apps/visualizations/create'
+  | '/apps/visualizations/$id/view'
+  | '/apps/visualizations/$id/edit'
   | '/apps/geospatial/map'
   | '/apps/geospatial/heatmap'
   | '/apps/geospatial/fences'
@@ -23,6 +27,7 @@ export type AppRoute =
 export interface BaseNavItem {
   title: string
   icon?: Icon | LucideIcon
+  hidden?: boolean  // Add hidden property here
 }
 
 export interface NavItem extends BaseNavItem {
@@ -47,4 +52,12 @@ export interface SidebarData {
   }
   navGroups: NavGroup[]
   teams: any[]
+}
+
+export interface SidebarItem {
+  title: string
+  url?: string
+  icon?: Icon | LucideIcon
+  items?: SidebarItem[]
+  hidden?: boolean  // 新增属性
 }
