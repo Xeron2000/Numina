@@ -62,6 +62,9 @@ const AuthenticatedSettingsAppearanceLazyImport = createFileRoute(
 const AuthenticatedSettingsAccountLazyImport = createFileRoute(
   '/_authenticated/settings/account',
 )()
+const AuthenticatedAppsGeospatialIndexLazyImport = createFileRoute(
+  '/_authenticated/apps/geospatial/',
+)()
 const AuthenticatedAppsDatasetsIndexLazyImport = createFileRoute(
   '/_authenticated/apps/datasets/',
 )()
@@ -294,6 +297,17 @@ const AuthenticatedSettingsAccountLazyRoute =
     getParentRoute: () => AuthenticatedSettingsRouteLazyRoute,
   } as any).lazy(() =>
     import('./routes/_authenticated/settings/account.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const AuthenticatedAppsGeospatialIndexLazyRoute =
+  AuthenticatedAppsGeospatialIndexLazyImport.update({
+    id: '/apps/geospatial/',
+    path: '/apps/geospatial/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/apps/geospatial/index.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -683,6 +697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppsDatasetsIndexLazyImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/apps/geospatial/': {
+      id: '/_authenticated/apps/geospatial/'
+      path: '/apps/geospatial'
+      fullPath: '/apps/geospatial'
+      preLoaderRoute: typeof AuthenticatedAppsGeospatialIndexLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/apps/visualizations/$id/edit': {
       id: '/_authenticated/apps/visualizations/$id/edit'
       path: '/apps/visualizations/$id/edit'
@@ -746,6 +767,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppsVisualizationsCreateLazyRoute: typeof AuthenticatedAppsVisualizationsCreateLazyRoute
   AuthenticatedAppsVisualizationsIndexRoute: typeof AuthenticatedAppsVisualizationsIndexRoute
   AuthenticatedAppsDatasetsIndexLazyRoute: typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  AuthenticatedAppsGeospatialIndexLazyRoute: typeof AuthenticatedAppsGeospatialIndexLazyRoute
   AuthenticatedAppsVisualizationsIdEditLazyRoute: typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
   AuthenticatedAppsVisualizationsIdViewLazyRoute: typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
@@ -778,6 +800,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedAppsVisualizationsIndexRoute,
   AuthenticatedAppsDatasetsIndexLazyRoute:
     AuthenticatedAppsDatasetsIndexLazyRoute,
+  AuthenticatedAppsGeospatialIndexLazyRoute:
+    AuthenticatedAppsGeospatialIndexLazyRoute,
   AuthenticatedAppsVisualizationsIdEditLazyRoute:
     AuthenticatedAppsVisualizationsIdEditLazyRoute,
   AuthenticatedAppsVisualizationsIdViewLazyRoute:
@@ -821,6 +845,7 @@ export interface FileRoutesByFullPath {
   '/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
   '/apps/visualizations': typeof AuthenticatedAppsVisualizationsIndexRoute
   '/apps/datasets': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/apps/geospatial': typeof AuthenticatedAppsGeospatialIndexLazyRoute
   '/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
   '/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
@@ -857,6 +882,7 @@ export interface FileRoutesByTo {
   '/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
   '/apps/visualizations': typeof AuthenticatedAppsVisualizationsIndexRoute
   '/apps/datasets': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/apps/geospatial': typeof AuthenticatedAppsGeospatialIndexLazyRoute
   '/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
   '/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
@@ -897,6 +923,7 @@ export interface FileRoutesById {
   '/_authenticated/apps/visualizations/create': typeof AuthenticatedAppsVisualizationsCreateLazyRoute
   '/_authenticated/apps/visualizations/': typeof AuthenticatedAppsVisualizationsIndexRoute
   '/_authenticated/apps/datasets/': typeof AuthenticatedAppsDatasetsIndexLazyRoute
+  '/_authenticated/apps/geospatial/': typeof AuthenticatedAppsGeospatialIndexLazyRoute
   '/_authenticated/apps/visualizations/$id/edit': typeof AuthenticatedAppsVisualizationsIdEditLazyRoute
   '/_authenticated/apps/visualizations/$id/view': typeof AuthenticatedAppsVisualizationsIdViewLazyRoute
 }
@@ -937,6 +964,7 @@ export interface FileRouteTypes {
     | '/apps/visualizations/create'
     | '/apps/visualizations'
     | '/apps/datasets'
+    | '/apps/geospatial'
     | '/apps/visualizations/$id/edit'
     | '/apps/visualizations/$id/view'
   fileRoutesByTo: FileRoutesByTo
@@ -972,6 +1000,7 @@ export interface FileRouteTypes {
     | '/apps/visualizations/create'
     | '/apps/visualizations'
     | '/apps/datasets'
+    | '/apps/geospatial'
     | '/apps/visualizations/$id/edit'
     | '/apps/visualizations/$id/view'
   id:
@@ -1010,6 +1039,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apps/visualizations/create'
     | '/_authenticated/apps/visualizations/'
     | '/_authenticated/apps/datasets/'
+    | '/_authenticated/apps/geospatial/'
     | '/_authenticated/apps/visualizations/$id/edit'
     | '/_authenticated/apps/visualizations/$id/view'
   fileRoutesById: FileRoutesById
@@ -1089,6 +1119,7 @@ export const routeTree = rootRoute
         "/_authenticated/apps/visualizations/create",
         "/_authenticated/apps/visualizations/",
         "/_authenticated/apps/datasets/",
+        "/_authenticated/apps/geospatial/",
         "/_authenticated/apps/visualizations/$id/edit",
         "/_authenticated/apps/visualizations/$id/view"
       ]
@@ -1219,6 +1250,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/apps/datasets/": {
       "filePath": "_authenticated/apps/datasets/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/apps/geospatial/": {
+      "filePath": "_authenticated/apps/geospatial/index.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/apps/visualizations/$id/edit": {

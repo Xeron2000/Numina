@@ -33,7 +33,7 @@ export function MapView() {
           }
         ]
       },
-      center: [116.3972, 39.9075], // 北京市中心
+      center: [116.3972, 39.9075],
       zoom: 9
     })
 
