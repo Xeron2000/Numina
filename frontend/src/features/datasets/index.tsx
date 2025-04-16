@@ -1,100 +1,59 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { IconPlus, IconSearch, IconTrash, IconEdit } from '@tabler/icons-react'
+import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { Plus, Upload } from 'lucide-react'
+import { datasetsApi } from '@/api/datasets'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
+import { Card } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
-
-// 临时数据，后续需要替换为API调用
-const mockDatasets = [
-  {
-    id: 1,
-    name: '空气质量数据集2023',
-    description: '包含2023年全年的空气质量监测数据',
-    created_at: '2024-01-15',
-    file_type: 'CSV'
-  },
-  // ... 更多数据
-]
+import { Skeleton } from '@/components/ui/skeleton'
+import { DatasetCard } from './components/dataset-card'
 
 export default function Datasets() {
-  const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
+  const { data, isLoading } = useQuery({
+    queryKey: ['datasets'],
+    queryFn: () => datasetsApi.getAll()
+  })
 
   return (
     <>
       <Header>
-        <div className="flex items-center gap-4">
-          <Input
-            placeholder="搜索数据集..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-[300px]"
-          />
-          <IconSearch size={18} className="text-muted-foreground" />
-        </div>
-        <div className="ml-auto flex items-center gap-4">
-          <ThemeSwitch />
-          <ProfileDropdown />
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">数据集</h2>
+            <p className="text-sm text-muted-foreground">
+              管理和分析您的数据集
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate({ to: '/apps/datasets/upload' })}>
+              <Upload className="mr-2 h-4 w-4" />
+              上传数据集
+            </Button>
+            <Button onClick={() => navigate({ to: '/apps/datasets' })}>
+              <Plus className="mr-2 h-4 w-4" />
+              新建数据集
+            </Button>
+          </div>
         </div>
       </Header>
 
       <Main>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">数据集管理</h1>
-            <p className="text-muted-foreground">管理和分析您的数据集</p>
-          </div>
-          <Button asChild>
-            <Link to="/apps/datasets/upload">
-              <IconPlus className="mr-2" size={18} />
-              上传数据集
-            </Link>
-          </Button>
-        </div>
-
-        <Separator className="my-6" />
-
-        <div className="grid gap-4">
-          {mockDatasets.map((dataset) => (
-            <div
-              key={dataset.id}
-              className="flex items-center justify-between rounded-lg border p-4"
-            >
-              <div>
-                <h3 className="font-semibold">{dataset.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {dataset.description}
-                </p>
-                <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>创建时间: {dataset.created_at}</span>
-                  <span>文件类型: {dataset.file_type}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
-                  <Link to={`/apps/datasets/${dataset.id}`}>
-                    <IconEdit size={16} className="mr-2" />
-                    查看
-                  </Link>
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                >
-                  <IconTrash size={16} className="mr-2" />
-                  删除
-                </Button>
-              </div>
-            </div>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {isLoading ? (
+            Array(6).fill(0).map((_, i) => (
+              <Card key={i} className="p-4">
+                <Skeleton className="h-[160px]" />
+                <Skeleton className="mt-4 h-4 w-[200px]" />
+                <Skeleton className="mt-2 h-4 w-[160px]" />
+              </Card>
+            ))
+          ) : (
+            data?.data.map((item) => (
+              <DatasetCard key={item.id} dataset={item} />
+            ))
+          )}
         </div>
       </Main>
     </>

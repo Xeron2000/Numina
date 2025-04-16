@@ -1,45 +1,50 @@
-import { LinkProps } from '@tanstack/react-router'
+import { LucideIcon } from 'lucide-react'
+import { Icon } from '@tabler/icons-react'
 
-interface User {
-  name: string
-  email: string
-  avatar: string
-}
+export type AppRoute =
+  | '/'
+  | '/dashboard'
+  | '/apps/datasets'
+  | '/apps/datasets/upload'
+  | '/apps/analytics/builder'
+  | '/apps/analytics/history'
+  | '/apps/visualizations'
+  | '/apps/visualizations/create'
+  | '/apps/geospatial/map'
+  | '/apps/geospatial/heatmap'
+  | '/apps/geospatial/fences'
+  | '/settings'
+  | '/settings/account'
+  | '/settings/appearance'
+  | '/settings/display'
+  | '/settings/notifications'
+  | '/help-center'
 
-interface Team {
-  name: string
-  logo: React.ElementType
-  plan: string
-}
-
-interface BaseNavItem {
+export interface BaseNavItem {
   title: string
-  badge?: string
-  icon?: React.ElementType
+  icon?: Icon | LucideIcon
 }
 
-type NavLink = BaseNavItem & {
-  url: LinkProps['to']
-  items?: never
+export interface NavItem extends BaseNavItem {
+  url?: AppRoute
+  items?: NavItem[]
 }
 
-type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: LinkProps['to'] })[]
-  url?: never
-}
-
-type NavItem = NavCollapsible | NavLink
-
-interface NavGroup {
+export interface NavGroup {
   title: string
   items: NavItem[]
 }
 
-interface SidebarData {
-  logo: any
-  user: User
-  teams: Team[]
+export interface SidebarData {
+  user: {
+    name: string
+    email: string
+    avatar: string
+  }
+  logo: {
+    icon: LucideIcon
+    name: string
+  }
   navGroups: NavGroup[]
+  teams: any[]
 }
-
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }

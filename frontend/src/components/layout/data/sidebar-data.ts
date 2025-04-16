@@ -1,73 +1,92 @@
 import {
-  IconBrowserCheck,
-  IconDatabase,
-  IconHelp,
   IconLayoutDashboard,
-  IconNotification,
-  IconPalette,
-  IconSettings,
-  IconTool,
-  IconUserCog,
+  IconDatabase,
   IconChartBar,
-  IconMap,
   IconChartPie,
+  IconMap,
+  IconSettings,
+  IconHelp,
 } from '@tabler/icons-react'
 import { Command } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
-    avatar: '/avatars/shadcn.jpg',
+    name: 'Admin',
+    email: 'admin@clearair.com',
+    avatar: '/avatars/default.jpg',
   },
   logo: {
     icon: Command,
-    name: '空气质量监测平台'
+    name: 'ClearAir Insight'
   },
   navGroups: [
     {
-      title: '主要功能',
+      title: '概览',
       items: [
         {
           title: '仪表盘',
           url: '/',
           icon: IconLayoutDashboard,
         },
+      ],
+    },
+    {
+      title: '数据分析',
+      items: [
         {
           title: '数据集',
           url: '/apps/datasets',
           icon: IconDatabase,
+          items: [
+            {
+              title: '数据集列表',
+              url: '/apps/datasets',
+            },
+            {
+              title: '上传数据集',
+              url: '/apps/datasets/upload',
+            }
+          ]
         },
         {
-          title: '分析',
+          title: '分析工具',
           icon: IconChartBar,
           items: [
             {
-              title: '分析构建器',
+              title: '查询构建器',
               url: '/apps/analytics/builder',
             },
             {
-              title: '历史记录',
+              title: '分析记录',
               url: '/apps/analytics/history',
             }
           ]
         },
         {
-          title: '可视化',
+          title: '数据可视化',
           icon: IconChartPie,
-          url: '/apps/visualizations',
+          items: [
+            {
+              title: '可视化列表',
+              url: '/apps/visualizations',
+            },
+            {
+              title: '创建可视化',
+              url: '/apps/visualizations/create',
+            }
+          ]
         },
         {
-          title: '地理空间',
+          title: '空间分析',
           icon: IconMap,
           items: [
             {
-              title: '地图视图',
+              title: '地图分析',
               url: '/apps/geospatial/map',
             },
             {
-              title: '热力图',
+              title: '热力分布',
               url: '/apps/geospatial/heatmap',
             },
             {
@@ -79,41 +98,37 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: '系统设置',
+      title: '系统',
       items: [
         {
-          title: '设置',
+          title: '系统设置',
+          url: '/settings',
           icon: IconSettings,
           items: [
             {
-              title: '个人信息',
+              title: '个人资料',
               url: '/settings',
-              icon: IconUserCog,
             },
             {
               title: '账户设置',
               url: '/settings/account',
-              icon: IconTool,
             },
             {
               title: '外观设置',
               url: '/settings/appearance',
-              icon: IconPalette,
-            },
-            {
-              title: '通知设置',
-              url: '/settings/notifications',
-              icon: IconNotification,
             },
             {
               title: '显示设置',
               url: '/settings/display',
-              icon: IconBrowserCheck,
             },
-          ],
+            {
+              title: '通知设置',
+              url: '/settings/notifications',
+            }
+          ]
         },
         {
-          title: '帮助中心',
+          title: '帮助文档',
           url: '/help-center',
           icon: IconHelp,
         },
@@ -121,4 +136,4 @@ export const sidebarData: SidebarData = {
     },
   ],
   teams: []
-}
+} as const
