@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_active_user
 from app.db.session import get_db
 from app.models.settings import UserSettings
+from app.models.user import User
 from app.schemas.settings import (
     UserSettingsUpdate, UserSettingsResponse,
     AppearanceSettings, DisplaySettings

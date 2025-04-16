@@ -1,4 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Text, JSON
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.models.base import BaseModel
 
 class SavedQuery(BaseModel):

@@ -11,7 +11,7 @@ class Dataset(BaseModel):
     file_type = Column(String, nullable=False)  # csv, excel, etc.
     row_count = Column(Integer, nullable=True)
     columns_info = Column(JSON, nullable=True)  # 改用JSON类型存储列信息
-    metadata = Column(JSON, nullable=True)  # 新增：存储额外元数据
+    extra_metadata = Column(JSON, nullable=True)  # 改名：从metadata改为extra_metadata
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     # 关系

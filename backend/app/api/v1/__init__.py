@@ -8,8 +8,9 @@ from app.api.v1.endpoints.settings.routes import router as settings_router
 
 api_router = APIRouter()
 
-api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
+# Make sure this line is present
 api_router.include_router(datasets_router, prefix="/datasets", tags=["datasets"])
+api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(visualizations_router, prefix="/visualizations", tags=["visualizations"])
 api_router.include_router(geospatial_router, prefix="/geospatial", tags=["geospatial"])
 api_router.include_router(settings_router, prefix="/settings", tags=["settings"])

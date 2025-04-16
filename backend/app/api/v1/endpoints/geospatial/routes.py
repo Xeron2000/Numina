@@ -3,29 +3,21 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.deps import get_current_active_user
+from app.core.exceptions import ResourceNotFoundException, PermissionDeniedException
 from app.db.session import get_db
 from app.models.geospatial import GeoFence
+from app.models.user import User
 from app.schemas.geospatial import (
     GeoFenceCreate, GeoFenceUpdate, GeoFenceResponse, 
-    MapDataResponse, HeatmapDataResponse
+    GeoFenceList, MapDataResponse, HeatmapDataResponse
 )
 
 router = APIRouter()
 
-@router.post("/fences", response_model=GeoFenceResponse)
-async def create_geofence(
-    fence_in: GeoFenceCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
-    fence = GeoFence(**fence_in.dict(), owner_id=current_user.id)
-    db.add(fence)
-    db.commit()
-    db.refresh(fence)
-    return fence
-
-@router.get("/fences", response_model=List[GeoFenceResponse])
+@router.get("/fences", response_model=GeoFenceList)
 async def get_geofences(
+    skip: int = 0,
+    limit: int = 100,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
