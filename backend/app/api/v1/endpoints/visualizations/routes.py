@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.api.auth.dependencies import get_current_active_user
+from app.core.deps import get_current_active_user  # 更新导入路径
 from app.core.exceptions import ResourceNotFoundException, PermissionDeniedException
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.api.auth.dependencies import get_current_active_user
+from app.core.deps import get_current_active_user
 from app.core.exceptions import ResourceNotFoundException, PermissionDeniedException
 from app.db.session import get_db
 from app.models.visualization import Visualization

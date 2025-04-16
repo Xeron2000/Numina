@@ -1,21 +1,20 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
-from sqlalchemy.sql import func
+from sqlalchemy import Column, String, Integer, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.models.base import BaseModel
 
-class Dataset(Base):
+class Dataset(BaseModel):
     __tablename__ = "datasets"
 
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
     file_path = Column(String, nullable=False)
     file_type = Column(String, nullable=False)  # csv, excel, etc.
     row_count = Column(Integer, nullable=True)
-    columns_info = Column(Text, nullable=True)  # JSON string with column info
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    columns_info = Column(JSON, nullable=True)  # 改用JSON类型存储列信息
+    metadata = Column(JSON, nullable=True)  # 新增：存储额外元数据
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
+    # 关系
     owner = relationship("User", back_populates="datasets")
     visualizations = relationship("Visualization", back_populates="dataset", cascade="all, delete-orphan")
+    saved_queries = relationship("SavedQuery", back_populates="dataset", cascade="all, delete-orphan")

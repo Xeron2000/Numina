@@ -1,19 +1,17 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from app.db.base import Base
+from sqlalchemy import Column, String, Integer, ForeignKey, Text, JSON
+from app.models.base import BaseModel
 
-class SavedQuery(Base):
+class SavedQuery(BaseModel):
     __tablename__ = "saved_queries"
 
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
     query_string = Column(Text, nullable=False)
-    dataset_id = Column(Integer, ForeignKey("datasets.id"))
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    parameters = Column(JSON, nullable=True)  # 新增：存储查询参数
+    result_cache = Column(JSON, nullable=True)  # 新增：缓存查询结果
+    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    dataset = relationship("Dataset")
-    owner = relationship("User")
+    # 关系
+    dataset = relationship("Dataset", back_populates="saved_queries")
+    owner = relationship("User", back_populates="saved_queries")

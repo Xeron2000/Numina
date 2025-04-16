@@ -35,3 +35,9 @@ class DuplicateResourceException(HTTPException):
             status_code=status.HTTP_409_CONFLICT,
             detail=detail,
         )
+
+from fastapi import HTTPException
+
+class APIException(HTTPException):
+    def __init__(self, code: int, message: str):
+        super().__init__(status_code=code, detail={"code": code, "message": message})

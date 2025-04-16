@@ -1,20 +1,25 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from app.db.base import Base
+from sqlalchemy import Column, String, Integer, ForeignKey, Text, JSON, Enum
+import enum
+from app.models.base import BaseModel
 
-class Visualization(Base):
+class VisualizationType(str, enum.Enum):
+    BAR = "bar"
+    LINE = "line"
+    PIE = "pie"
+    SCATTER = "scatter"
+    MAP = "map"
+    HEATMAP = "heatmap"
+
+class Visualization(BaseModel):
     __tablename__ = "visualizations"
 
-    id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
     description = Column(Text, nullable=True)
-    visualization_type = Column(String, nullable=False)  # bar, line, pie, etc.
-    config = Column(Text, nullable=False)  # JSON config for visualization
-    dataset_id = Column(Integer, ForeignKey("datasets.id"))
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
+    visualization_type = Column(Enum(VisualizationType), nullable=False)
+    config = Column(JSON, nullable=False)  # 改用JSON类型
+    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # 关系
     dataset = relationship("Dataset", back_populates="visualizations")
-    owner = relationship("User")
+    owner = relationship("User", back_populates="visualizations")
