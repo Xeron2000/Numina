@@ -10,19 +10,22 @@ export interface Dataset {
 }
 
 export const datasetsApi = {
-  getAll: () => apiClient.get<Dataset[]>('/api/datasets'),
+  getAll: () => 
+    apiClient.get<Dataset[]>('/api/v1/datasets'),
   
-  getById: (id: number) => apiClient.get<Dataset>(`/api/datasets/${id}`),
+  getById: (id: number) => 
+    apiClient.get<Dataset>(`/api/v1/datasets/${id}`),
   
   create: (data: FormData) => 
-    apiClient.post<Dataset>('/api/datasets', data, {
+    apiClient.post<Dataset>('/api/v1/datasets', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     }),
     
   update: (id: number, data: Partial<Dataset>) =>
-    apiClient.patch<Dataset>(`/api/datasets/${id}`, data),
+    apiClient.put<Dataset>(`/api/v1/datasets/${id}`, data),
     
-  delete: (id: number) => apiClient.delete(`/api/datasets/${id}`),
+  delete: (id: number) => 
+    apiClient.delete(`/api/v1/datasets/${id}`),
 }

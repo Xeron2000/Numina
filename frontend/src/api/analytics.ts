@@ -43,23 +43,21 @@ export interface SavedQueryList {
 }
 
 export const analyticsApi = {
-  getTasks: () => apiClient.get<AnalyticsTask[]>('/api/analytics/tasks'),
+  getTasks: () => 
+    apiClient.get<AnalyticsTask[]>('/api/v1/analytics/tasks'),
   
   createTask: (data: { name: string; dataset_id: number }) =>
-    apiClient.post<AnalyticsTask>('/api/analytics/tasks', data),
+    apiClient.post<AnalyticsTask>('/api/v1/analytics/tasks', data),
     
   getTaskById: (id: number) =>
-    apiClient.get<AnalyticsTask>(`/api/analytics/tasks/${id}`),
+    apiClient.get<AnalyticsTask>(`/api/v1/analytics/tasks/${id}`),
   
-  // 执行查询
   runQuery: (data: QueryRequest) => 
-    apiClient.post<QueryResult>('/api/analytics/query', data),
+    apiClient.post<QueryResult>('/api/v1/analytics/query', data),
   
-  // 获取保存的查询列表
   getSavedQueries: (params?: { skip?: number; limit?: number; dataset_id?: number }) =>
-    apiClient.get<SavedQueryList>('/api/analytics/saved-queries', { params }),
+    apiClient.get<SavedQueryList>('/api/v1/analytics/saved-queries', { params }),
   
-  // 创建保存的查询
   createSavedQuery: (data: SavedQueryCreate) =>
-    apiClient.post<SavedQuery>('/api/analytics/saved-queries', data),
+    apiClient.post<SavedQuery>('/api/v1/analytics/saved-queries', data),
 }
