@@ -6,3 +6,12 @@ from app.db.base_class import Base
 # 为避免循环导入，我们将这些导入放在文件末尾
 
 # 在这里添加模型导入
+from app.models.user import User
+from app.models.dataset import Dataset
+from app.models.query import SavedQuery
+from app.models.visualization import Visualization
+from app.models.settings import UserSettings
+from app.models.geospatial import GeoFence
+
+# This file doesn't use Base directly, but it's imported for Alembic's use
+# The import is needed to collect all models in one place

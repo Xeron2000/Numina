@@ -5,26 +5,28 @@ from sqlalchemy import pool
 
 from alembic import context
 
+# Import Base and all models for Alembic to detect
+from app.db.base_class import Base
+from app.models.user import User
+from app.models.dataset import Dataset
+from app.models.query import SavedQuery
+from app.models.visualization import Visualization
+from app.models.settings import UserSettings
+from app.models.geospatial import GeoFence
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+# 设置数据库 URL（确保在 target_metadata 之前设置）
+config.set_main_option("sqlalchemy.url", "sqlite:///./sql_app.db")
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
+# 设置 target_metadata（这是关键修改）
+target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -76,12 +78,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
-
-# 导入基础类和所有模型
-from app.db.base_class import Base
-# 在这里导入所有模型，以便 Alembic 能够检测到它们
-from app.models import user, dataset, query, visualization, settings, geospatial
-
-# 设置 MetaData 对象
-target_metadata = Base.metadata
