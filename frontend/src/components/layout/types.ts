@@ -6,7 +6,7 @@ export type AppRoute =
   | '/dashboard'
   | '/apps/datasets'
   | '/apps/datasets/upload'
-  | '/apps/datasets/$id'  // Changed from :id to $id to match TanStack Router
+  | '/apps/datasets/$id'
   | '/apps/analytics/builder'
   | '/apps/analytics/history'
   | '/apps/analytics/$id'
@@ -24,22 +24,39 @@ export type AppRoute =
   | '/settings/notifications'
   | '/help-center'
 
+// 基础导航项接口
 export interface BaseNavItem {
   title: string
   icon?: Icon | LucideIcon
-  hidden?: boolean  // Add hidden property here
+  hidden?: boolean
+  badge?: string | number // 添加 badge 属性
 }
 
+// 导航项接口
 export interface NavItem extends BaseNavItem {
   url?: AppRoute
   items?: NavItem[]
 }
 
+// 带链接的导航项接口
+export interface NavLink extends NavItem {
+  url: AppRoute // 必需的 URL
+  items?: never // 不允许有子项
+}
+
+// 可折叠导航项接口
+export interface NavCollapsible extends NavItem {
+  url?: never // 不允许有 URL
+  items: NavItem[] // 必需的子项数组
+}
+
+// 导航组接口
 export interface NavGroup {
   title: string
   items: NavItem[]
 }
 
+// 侧边栏数据接口
 export interface SidebarData {
   user: {
     name: string
@@ -51,13 +68,11 @@ export interface SidebarData {
     name: string
   }
   navGroups: NavGroup[]
-  teams: any[]
+  teams: {
+    id: string | number
+    name: string
+    avatar?: string
+  }[] // 明确定义 teams 类型
 }
 
-export interface SidebarItem {
-  title: string
-  url?: string
-  icon?: Icon | LucideIcon
-  items?: SidebarItem[]
-  hidden?: boolean  // 新增属性
-}
+// 移除重复的 SidebarItem 接口，因为已经有了 NavItem

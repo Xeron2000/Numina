@@ -57,13 +57,6 @@ export default function Dashboard() {
 
       <Main>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold">空气污染数据分析平台</h1>
-            <p className="text-muted-foreground">
-              实时监测和分析空气质量数据，为环境决策提供支持
-            </p>
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title} className="relative">

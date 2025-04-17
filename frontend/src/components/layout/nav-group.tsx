@@ -38,15 +38,33 @@ export function NavGroup({ title, items }: NavGroup) {
         {items.map((item) => {
           const key = `${item.title}-${item.url}`
 
-          if (!item.items)
-            return <SidebarMenuLink key={key} item={item} href={href} />
+          // 检查是否是叶子节点且有有效的 URL
+          if (!item.items && item.url) {
+            return <SidebarMenuLink key={key} item={item as NavLink} href={href} />
+          }
 
-          if (state === 'collapsed')
+          // 检查是否是有子项的节点
+          if (item.items?.length) {
+            const collapsibleItem = item as NavCollapsible
+            if (state === 'collapsed') {
+              return (
+                <SidebarMenuCollapsedDropdown 
+                  key={key} 
+                  item={collapsibleItem} 
+                  href={href} 
+                />
+              )
+            }
             return (
-              <SidebarMenuCollapsedDropdown key={key} item={item} href={href} />
+              <SidebarMenuCollapsible 
+                key={key} 
+                item={collapsibleItem} 
+                href={href} 
+              />
             )
+          }
 
-          return <SidebarMenuCollapsible key={key} item={item} href={href} />
+          return null // 处理无效节点
         })}
       </SidebarMenu>
     </SidebarGroup>
@@ -69,7 +87,7 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
         <Link to={item.url} onClick={() => setOpenMobile(false)}>
           {item.icon && <item.icon />}
           <span>{item.title}</span>
-          {item.badge && <NavBadge>{item.badge}</NavBadge>}
+          {'badge' in item && <NavBadge>{item.badge}</NavBadge>}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -168,13 +186,16 @@ const SidebarMenuCollapsedDropdown = ({
   )
 }
 
+// 修改 checkIsActive 函数以处理可能为 undefined 的 url
 function checkIsActive(href: string, item: NavItem, mainNav = false) {
+  if (!item.url) return false
+
   return (
-    href === item.url || // /endpint?search=param
+    href === item.url || // /endpoint?search=param
     href.split('?')[0] === item.url || // endpoint
     !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
     (mainNav &&
       href.split('/')[1] !== '' &&
-      href.split('/')[1] === item?.url?.split('/')[1])
+      href.split('/')[1] === item.url.split('/')[1])
   )
 }
