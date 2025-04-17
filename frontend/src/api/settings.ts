@@ -1,4 +1,4 @@
-import apiClient from './client'
+import { http } from '@/lib/http'
 
 export interface UserSettings {
   id: number
@@ -19,15 +19,12 @@ export interface DisplaySettings {
 }
 
 export const settingsApi = {
-  // 获取用户设置
   getSettings: () =>
-    apiClient.get<UserSettings>('/api/v1/settings/profile'),
+    http.get<UserSettings>('/api/v1/settings/profile'),
 
-  // 更新主题设置
   updateAppearance: (data: AppearanceSettings) =>
-    apiClient.put<UserSettings>('/api/v1/settings/appearance', data),
+    http.put<UserSettings>('/api/v1/settings/appearance', data),
 
-  // 更新显示设置
   updateDisplay: (data: DisplaySettings) =>
-    apiClient.put<UserSettings>('/api/v1/settings/display', data),
+    http.put<UserSettings>('/api/v1/settings/display', data),
 }

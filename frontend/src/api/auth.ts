@@ -1,4 +1,4 @@
-import apiClient from './client'
+import { http } from '@/lib/http'
 
 export interface LoginCredentials {
   email: string
@@ -17,14 +17,14 @@ export interface AuthResponse {
 
 export const authApi = {
   login: (credentials: LoginCredentials) =>
-    apiClient.post<AuthResponse>('/api/v1/auth/login', credentials),
+    http.post<AuthResponse>('/api/v1/auth/login', credentials),
     
   register: (data: LoginCredentials) =>
-    apiClient.post<AuthResponse>('/api/v1/auth/register', data),
+    http.post<AuthResponse>('/api/v1/auth/register', data),
     
   logout: () => 
-    apiClient.post('/api/v1/auth/logout'),
+    http.post('/api/v1/auth/logout'),
   
   me: () => 
-    apiClient.get('/api/v1/auth/profile'),
+    http.get('/api/v1/auth/profile'),
 }

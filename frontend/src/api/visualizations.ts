@@ -1,4 +1,4 @@
-import apiClient from './client'
+import { http } from '@/lib/http'
 
 export interface Visualization {
   id: number
@@ -26,18 +26,23 @@ export interface VisualizationList {
 }
 
 export const visualizationsApi = {
+  // 获取可视化列表
   getAll: (params?: { skip?: number; limit?: number; dataset_id?: number }) =>
-    apiClient.get<VisualizationList>('/api/v1/visualizations', { params }),
+    http.get<VisualizationList>('/api/v1/visualizations', { params }),
   
+  // 获取单个可视化
   getById: (id: number) =>
-    apiClient.get<Visualization>(`/api/v1/visualizations/${id}`),
+    http.get<Visualization>(`/api/v1/visualizations/${id}`),
   
+  // 创建新可视化
   create: (data: VisualizationCreate) =>
-    apiClient.post<Visualization>('/api/v1/visualizations', data),
+    http.post<Visualization>('/api/v1/visualizations', data),
   
+  // 更新可视化
   update: (id: number, data: Partial<VisualizationCreate>) =>
-    apiClient.put<Visualization>(`/api/v1/visualizations/${id}`, data),
+    http.put<Visualization>(`/api/v1/visualizations/${id}`, data),
   
+  // 删除可视化
   delete: (id: number) =>
-    apiClient.delete(`/api/v1/visualizations/${id}`),
+    http.delete(`/api/v1/visualizations/${id}`),
 }

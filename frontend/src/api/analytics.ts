@@ -1,4 +1,4 @@
-import apiClient from './client'
+import { http } from '@/lib/http'
 
 export interface AnalyticsTask {
   id: number
@@ -44,20 +44,20 @@ export interface SavedQueryList {
 
 export const analyticsApi = {
   getTasks: () => 
-    apiClient.get<AnalyticsTask[]>('/api/v1/analytics/tasks'),
+    http.get<AnalyticsTask[]>('/api/v1/analytics/tasks'),
   
   createTask: (data: { name: string; dataset_id: number }) =>
-    apiClient.post<AnalyticsTask>('/api/v1/analytics/tasks', data),
+    http.post<AnalyticsTask>('/api/v1/analytics/tasks', data),
     
   getTaskById: (id: number) =>
-    apiClient.get<AnalyticsTask>(`/api/v1/analytics/tasks/${id}`),
+    http.get<AnalyticsTask>(`/api/v1/analytics/tasks/${id}`),
   
   runQuery: (data: QueryRequest) => 
-    apiClient.post<QueryResult>('/api/v1/analytics/query', data),
+    http.post<QueryResult>('/api/v1/analytics/query', data),
   
   getSavedQueries: (params?: { skip?: number; limit?: number; dataset_id?: number }) =>
-    apiClient.get<SavedQueryList>('/api/v1/analytics/saved-queries', { params }),
+    http.get<SavedQueryList>('/api/v1/analytics/saved-queries', { params }),
   
   createSavedQuery: (data: SavedQueryCreate) =>
-    apiClient.post<SavedQuery>('/api/v1/analytics/saved-queries', data),
+    http.post<SavedQuery>('/api/v1/analytics/saved-queries', data),
 }

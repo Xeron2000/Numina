@@ -1,4 +1,4 @@
-import apiClient from './client'
+import { http } from '@/lib/http'
 
 export interface GeoFence {
   id: number
@@ -31,18 +31,15 @@ export interface MapData {
 }
 
 export const geospatialApi = {
-  // 围栏相关
   getFences: () => 
-    apiClient.get<GeoFence[]>('/api/v1/geospatial/fences'),
+    http.get<GeoFence[]>('/api/v1/geospatial/fences'),
   
   createFence: (data: Omit<GeoFence, 'id' | 'owner_id' | 'created_at' | 'updated_at'>) =>
-    apiClient.post<GeoFence>('/api/v1/geospatial/fences', data),
+    http.post<GeoFence>('/api/v1/geospatial/fences', data),
 
-  // 地图数据
   getMapData: () =>
-    apiClient.get<MapData>('/api/v1/geospatial/map'),
+    http.get<MapData>('/api/v1/geospatial/map'),
 
-  // 热力图数据
   getHeatmapData: () =>
-    apiClient.get<MapData>('/api/v1/geospatial/heatmap'),
+    http.get<MapData>('/api/v1/geospatial/heatmap'),
 }
