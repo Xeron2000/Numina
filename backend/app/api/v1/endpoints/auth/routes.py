@@ -3,7 +3,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
-from app.api.auth.dependencies import get_current_active_user
+# 修改这一行，从正确的位置导入
+from app.core.deps import get_current_active_user
 from app.core.config import settings
 from app.core.exceptions import CredentialsException, DuplicateResourceException
 from app.core.security import create_access_token, get_password_hash, verify_password

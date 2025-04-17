@@ -5,10 +5,14 @@ from app.api.v1.endpoints.datasets.routes import router as datasets_router
 from app.api.v1.endpoints.visualizations.routes import router as visualizations_router
 from app.api.v1.endpoints.geospatial.routes import router as geospatial_router
 from app.api.v1.endpoints.settings.routes import router as settings_router
+from app.api.v1.endpoints.auth.routes import router as auth_router  # 添加这一行
 
 api_router = APIRouter()
 
-# Make sure this line is present
+# 添加 auth 路由（放在最前面）
+api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+# 其他路由保持不变
 api_router.include_router(datasets_router, prefix="/datasets", tags=["datasets"])
 api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(visualizations_router, prefix="/visualizations", tags=["visualizations"])

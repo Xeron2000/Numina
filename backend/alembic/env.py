@@ -76,3 +76,12 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+
+# 导入基础类和所有模型
+from app.db.base_class import Base
+# 在这里导入所有模型，以便 Alembic 能够检测到它们
+from app.models import user, dataset, query, visualization, settings, geospatial
+
+# 设置 MetaData 对象
+target_metadata = Base.metadata
