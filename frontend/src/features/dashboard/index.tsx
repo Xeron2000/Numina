@@ -8,6 +8,7 @@ import {
 } from '@tabler/icons-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
+import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -49,6 +50,7 @@ export default function Dashboard() {
     <>
       <Header>
         <h2 className="text-lg font-semibold">仪表盘</h2>
+        <Search />
         <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />
           <ProfileDropdown />
