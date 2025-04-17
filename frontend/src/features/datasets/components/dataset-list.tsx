@@ -51,7 +51,7 @@ export function DatasetList({ datasets }: DatasetListProps) {
                 </div>
               </TableCell>
               <TableCell>{dataset.file_type}</TableCell>
-              <TableCell>{formatFileSize(dataset.size)}</TableCell>
+              <TableCell>{formatFileSize(dataset.file_size)}</TableCell>
               <TableCell>
                 <DatasetStatus status={dataset.status} />
               </TableCell>

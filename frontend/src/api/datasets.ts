@@ -3,13 +3,19 @@ import { http } from '@/lib/http'
 export interface Dataset {
   id: number
   name: string
-  description: string
+  description: string | null
   file_type: string
-  size: number
-  status: 'ready' | 'processing' | 'error'
+  file_size: number
+  row_count: number
   created_at: string
   updated_at: string
-  owner_id: number
+  status: 'ready' | 'processing' | 'error'
+}
+
+export interface Response<T> {
+  code: number
+  message: string
+  data: T
 }
 
 export interface DatasetList {
@@ -33,18 +39,15 @@ export const datasetsApi = {
     http.get<Dataset>(`/api/v1/datasets/${id}`),
   
   // 上传新数据集
-  upload: (data: FormData) =>
-    http.post<Dataset>('/api/v1/datasets/upload', data, {
+  upload: async (file: File, dataType: string) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('data_type', dataType)
+    
+    return http.post('/api/v1/datasets/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    }),
-  
-  // 更新数据集信息
-  update: (id: number, data: Partial<Omit<Dataset, 'id' | 'owner_id' | 'created_at' | 'updated_at'>>) =>
-    http.put<Dataset>(`/api/v1/datasets/${id}`, data),
-  
-  // 删除数据集
-  delete: (id: number) =>
-    http.delete(`/api/v1/datasets/${id}`),
+    })
+  }
 }
