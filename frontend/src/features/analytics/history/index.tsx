@@ -59,7 +59,7 @@ export default function AnalyticsHistory() {
           <div className="flex flex-1 items-center space-x-4">
             <h2 className="text-lg font-semibold">分析历史</h2>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ml-4">
             <div className="w-64">
               <Input
                 placeholder="搜索查询..."

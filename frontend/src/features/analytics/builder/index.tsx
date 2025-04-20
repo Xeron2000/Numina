@@ -97,7 +97,7 @@ export default function AnalyticsBuilder() {
           <div className="flex items-center space-x-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className='ml-2'>
                   <Settings2 className="mr-2 h-4 w-4" />
                   设置
                 </Button>
