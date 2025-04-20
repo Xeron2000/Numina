@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Grid, List, SortAsc, Filter } from 'lucide-react'
+import { Plus, Grid, List, SortAsc, Filter } from 'lucide-react'
 import { useState } from 'react'
 import { visualizationsApi } from '@/api/visualizations'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +26,7 @@ type SortField = 'name' | 'created_at' | 'type'
 
 export default function Visualizations() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
+  const [search] = useState('')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortField, setSortField] = useState<SortField>('created_at')
   const [typeFilter, setTypeFilter] = useState<Visualization['type'] | 'all'>('all')

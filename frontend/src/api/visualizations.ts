@@ -12,12 +12,13 @@ export interface Visualization {
   updated_at: string
 }
 
+// Add or update the VisualizationCreate type
 export interface VisualizationCreate {
-  name: string
-  description: string
-  type: Visualization['type']
-  config: Record<string, any>
-  dataset_id: number
+  name: string;
+  description: string; // Make it required
+  type: 'line' | 'bar' | 'pie' | 'scatter' | 'map';
+  dataset_id: number;
+  config: Record<string, any>;
 }
 
 export interface VisualizationList {
