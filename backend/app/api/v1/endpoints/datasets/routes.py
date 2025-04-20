@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import ValidationError, parse_raw_as
 from sqlalchemy.orm import Session
 from typing import List, Optional

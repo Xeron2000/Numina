@@ -1,25 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from pydantic import BaseModel, EmailStr  # 添加这行导入
+from typing import Optional
 
-# 修改这一行，从正确的位置导入
+from app.core.security import create_access_token, verify_password
 from app.core.deps import get_current_active_user
-from app.core.config import settings
-from app.core.exceptions import CredentialsException, DuplicateResourceException
-from app.core.security import create_access_token, get_password_hash, verify_password
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token
 
 router = APIRouter()
 
-# 添加新的请求模型
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
-# 修改登录接口
 @router.post("/login", response_model=Token)
 async def login(
     credentials: LoginRequest,
@@ -44,7 +40,6 @@ async def login(
         }
     }
 
-# 修改注册接口
 @router.post("/register", response_model=Token)
 async def register(user_in: UserCreate, db: Session = Depends(get_db)):
     # 检查邮箱是否已存在
@@ -92,7 +87,6 @@ async def logout(current_user: User = Depends(get_current_active_user)):
     # 客户端应删除令牌实现登出
     return {"detail": "Successfully logged out"}
 
-# 修改用户信息接口
 @router.get("/profile", response_model=Token)
 async def get_user_profile(current_user: User = Depends(get_current_active_user)):
     return {

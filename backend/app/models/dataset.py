@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON, BigInteger
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base_class import Base
 
@@ -17,3 +18,6 @@ class Dataset(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Add to the Dataset model class
+    analytics_tasks = relationship("AnalyticsTask", back_populates="dataset")

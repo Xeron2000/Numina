@@ -19,3 +19,9 @@ class User(BaseModel):
     # 添加新的关系
     geofences = relationship("GeoFence", back_populates="owner", cascade="all, delete-orphan")
     settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
+    # Add to the User model class
+    analytics_tasks = relationship("AnalyticsTask", back_populates="owner")
+    
+    # Add to the existing relationships in the User class
+    activities = relationship("Activity", back_populates="user")

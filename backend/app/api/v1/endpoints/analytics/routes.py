@@ -2,18 +2,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.core.deps import get_current_active_user  # 更新导入路径
+from app.core.deps import get_current_active_user
 from app.core.exceptions import ResourceNotFoundException, PermissionDeniedException
 from app.db.session import get_db
 from app.models.query import SavedQuery
 from app.models.dataset import Dataset
 from app.models.user import User
+from app.models.analytics import AnalyticsTask  # Update this line
 from app.schemas.query import (
     QueryRequest, QueryResult, SavedQueryCreate, SavedQueryUpdate, 
-    SavedQueryResponse, SavedQueryList
+    SavedQueryResponse, SavedQueryList,
+    AnalyticsTaskResponse, AnalyticsTaskList  # Move these from models to schemas
 )
 from app.utils.data_processor import execute_query
-from app.models.analytics import AnalyticsTask, AnalyticsTaskResponse, AnalyticsTaskList
 
 router = APIRouter()
 

@@ -6,6 +6,8 @@ from app.models.query import SavedQuery
 from app.models.visualization import Visualization
 from app.models.settings import UserSettings
 from app.models.geospatial import GeoFence
+from app.models.activity import Activity
+from app.models.station import Station  # Add this line
 
 # 设置关系
 User.datasets = relationship("Dataset", back_populates="owner", cascade="all, delete-orphan")
