@@ -1,35 +1,32 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Dict, Any, List, Literal
 from datetime import datetime
-from typing import Optional, List, Dict, Any, Union
 
 class VisualizationBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    visualization_type: str
-    config: str  # JSON string
+    description: str
+    type: Literal['line', 'bar', 'pie', 'scatter', 'map']
+    config: Dict[str, Any]
+    dataset_id: int
 
 class VisualizationCreate(VisualizationBase):
-    dataset_id: int
+    pass
 
 class VisualizationUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    visualization_type: Optional[str] = None
-    config: Optional[str] = None
-    dataset_id: Optional[int] = None
+    name: str | None = None
+    description: str | None = None
+    type: Literal['line', 'bar', 'pie', 'scatter', 'map'] | None = None
+    config: Dict[str, Any] | None = None
+    dataset_id: int | None = None
 
-class VisualizationInDB(VisualizationBase):
+class VisualizationResponse(VisualizationBase):
     id: int
-    dataset_id: int
     owner_id: int
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None
 
     class Config:
-        orm_mode = True
-
-class VisualizationResponse(VisualizationInDB):
-    pass
+        from_attributes = True
 
 class VisualizationList(BaseModel):
     items: List[VisualizationResponse]

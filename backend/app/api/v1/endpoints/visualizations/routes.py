@@ -18,14 +18,15 @@ from app.models.user import User
 from app.schemas.visualization import (
     VisualizationCreate, VisualizationUpdate, VisualizationResponse, VisualizationList
 )
+from fastapi import Query
 
 router = APIRouter()
 
 @router.get("", response_model=VisualizationList)
 async def get_visualizations(
-    skip: int = 0,
-    limit: int = 100,
-    dataset_id: int = None,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
+    dataset_id: int | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -76,7 +77,7 @@ async def create_visualization(
     db_visualization = Visualization(
         name=visualization_in.name,
         description=visualization_in.description,
-        visualization_type=visualization_in.visualization_type,
+        type=visualization_in.type,  # 使用新的字段名
         config=visualization_in.config,
         dataset_id=visualization_in.dataset_id,
         owner_id=current_user.id
@@ -113,7 +114,7 @@ async def update_visualization(
             raise PermissionDeniedException()
     
     # 更新可视化
-    update_data = visualization_in.dict(exclude_unset=True)
+    update_data = visualization_in.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(visualization, key, value)
     

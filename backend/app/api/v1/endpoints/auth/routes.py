@@ -14,24 +14,38 @@ from app.schemas.user import UserCreate, UserResponse, Token
 
 router = APIRouter()
 
+# 添加新的请求模型
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+# 修改登录接口
 @router.post("/login", response_model=Token)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    credentials: LoginRequest,
     db: Session = Depends(get_db)
 ):
-    # 查找用户
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user or not verify_password(credentials.password, user.hashed_password):
         raise CredentialsException()
 
-    # 创建访问令牌
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         subject=user.id, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "username": user.username
+        }
+    }
 
-@router.post("/register", response_model=UserResponse)
+# 修改注册接口
+@router.post("/register", response_model=Token)
 async def register(user_in: UserCreate, db: Session = Depends(get_db)):
     # 检查邮箱是否已存在
     existing_user = db.query(User).filter(User.email == user_in.email).first()
@@ -51,10 +65,26 @@ async def register(user_in: UserCreate, db: Session = Depends(get_db)):
         hashed_password=hashed_password,
         is_active=True
     )
+    
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    
+    # 创建访问令牌
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=db_user.id, expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": db_user.id,
+            "email": db_user.email,
+            "username": db_user.username
+        }
+    }
 
 @router.post("/logout")
 async def logout(current_user: User = Depends(get_current_active_user)):
@@ -62,6 +92,15 @@ async def logout(current_user: User = Depends(get_current_active_user)):
     # 客户端应删除令牌实现登出
     return {"detail": "Successfully logged out"}
 
-@router.get("/profile", response_model=UserResponse)
+# 修改用户信息接口
+@router.get("/profile", response_model=Token)
 async def get_user_profile(current_user: User = Depends(get_current_active_user)):
-    return current_user
+    return {
+        "access_token": "",  # 保持现有token
+        "token_type": "bearer",
+        "user": {
+            "id": current_user.id,
+            "email": current_user.email,
+            "username": current_user.username
+        }
+    }

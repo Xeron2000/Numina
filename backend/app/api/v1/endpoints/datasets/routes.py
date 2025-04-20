@@ -17,12 +17,57 @@ router = APIRouter()
 
 @router.get("", response_model=DatasetList)
 async def get_datasets(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    datasets = db.query(Dataset).filter(Dataset.owner_id == current_user.id).all()
-    total = db.query(Dataset).filter(Dataset.owner_id == current_user.id).count()
+    query = db.query(Dataset).filter(Dataset.owner_id == current_user.id)
+    total = query.count()
+    datasets = query.offset(skip).limit(limit).all()
     return {"items": datasets, "total": total}
+
+@router.post("/upload", response_model=DatasetResponse)
+async def upload_dataset(
+    file: UploadFile = File(...),
+    data_type: str = Form(...),
+    name: str = Form(...),
+    description: str = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    # 验证文件类型
+    if not validate_file_extension(file.filename):
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    # 保存文件
+    file_path = await save_upload_file(file)
+    file_size = os.path.getsize(file_path)
+    
+    # 获取文件信息
+    row_count, columns_info = get_file_info(file_path, data_type)
+    
+    # 创建数据集记录
+    db_dataset = Dataset(
+        name=name,
+        description=description,
+        owner_id=current_user.id,
+        file_path=file_path,
+        file_type=data_type,
+        file_size=file_size,
+        row_count=row_count,
+        columns_info=columns_info,
+        status='processing'  # 初始状态为处理中
+    )
+    
+    db.add(db_dataset)
+    db.commit()
+    db.refresh(db_dataset)
+    
+    # 异步处理数据集（这里需要实现具体的处理逻辑）
+    process_dataset.delay(db_dataset.id)
+    
+    return db_dataset
 
 @router.get("/{id}", response_model=DatasetResponse)
 async def get_dataset(

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
+from typing import Optional, List
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 
 class DatasetBase(BaseModel):
     name: str
@@ -10,23 +10,19 @@ class DatasetCreate(DatasetBase):
     pass
 
 class DatasetUpdate(DatasetBase):
-    name: Optional[str] = None
+    pass
 
-class DatasetInDB(DatasetBase):
+class DatasetResponse(DatasetBase):
     id: int
-    file_path: str
     file_type: str
-    row_count: Optional[int] = None
-    columns_info: Optional[str] = None
-    owner_id: int
+    file_size: int
+    row_count: int
     created_at: datetime
-    updated_at: Optional[datetime] = None
+    updated_at: Optional[datetime]
+    status: str
 
     class Config:
-        orm_mode = True
-
-class DatasetResponse(DatasetInDB):
-    pass
+        from_attributes = True
 
 class DatasetList(BaseModel):
     items: List[DatasetResponse]

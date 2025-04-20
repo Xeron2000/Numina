@@ -13,6 +13,7 @@ from app.schemas.query import (
     SavedQueryResponse, SavedQueryList
 )
 from app.utils.data_processor import execute_query
+from app.models.analytics import AnalyticsTask, AnalyticsTaskResponse, AnalyticsTaskList
 
 router = APIRouter()
 
@@ -89,3 +90,51 @@ async def create_saved_query(
     db.refresh(db_query)
     
     return db_query
+
+@router.get("/tasks/{id}", response_model=AnalyticsTaskResponse)
+async def get_task(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    task = db.query(AnalyticsTask).filter(AnalyticsTask.id == id).first()
+    
+    if not task:
+        raise ResourceNotFoundException("Analytics Task")
+    
+    if task.owner_id != current_user.id:
+        raise PermissionDeniedException()
+    
+    return task
+
+@router.get("/tasks", response_model=AnalyticsTaskList)
+async def get_tasks(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    query = db.query(AnalyticsTask).filter(AnalyticsTask.owner_id == current_user.id)
+    tasks = query.offset(skip).limit(limit).all()
+    total = query.count()
+    
+    return {"items": tasks, "total": total}
+
+@router.delete("/tasks/{id}")
+async def delete_task(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    task = db.query(AnalyticsTask).filter(AnalyticsTask.id == id).first()
+    
+    if not task:
+        raise ResourceNotFoundException("Analytics Task")
+    
+    if task.owner_id != current_user.id:
+        raise PermissionDeniedException()
+    
+    db.delete(task)
+    db.commit()
+    
+    return {"detail": "Task deleted successfully"}
