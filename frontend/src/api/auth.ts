@@ -5,6 +5,10 @@ export interface LoginCredentials {
   password: string
 }
 
+export interface RegisterCredentials extends LoginCredentials {
+  username: string
+}
+
 export interface AuthResponse {
   access_token: string
   token_type: string
@@ -19,7 +23,7 @@ export const authApi = {
   login: (credentials: LoginCredentials) =>
     http.post<AuthResponse>('/api/auth/login', credentials),
     
-  register: (data: LoginCredentials) =>
+  register: (data: RegisterCredentials) =>
     http.post<AuthResponse>('/api/auth/register', data),
     
   logout: () => 

@@ -17,6 +17,8 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 import { authApi } from '@/api/auth'
 import { useNavigate } from '@tanstack/react-router'
+import { handleServerError } from '@/utils/handle-server-error'
+import { toast } from 'sonner'
 
 type SignUpFormProps = HTMLAttributes<HTMLDivElement>
 
@@ -24,20 +26,24 @@ const formSchema = z
   .object({
     email: z
       .string()
-      .min(1, { message: 'Please enter your email' })
-      .email({ message: 'Invalid email address' }),
+      .min(1, { message: '请输入邮箱' })
+      .email({ message: '邮箱格式不正确' }),
+    username: z
+      .string()
+      .min(1, { message: '请输入用户名' })
+      .min(3, { message: '用户名至少需要3个字符' }),
     password: z
       .string()
       .min(1, {
-        message: 'Please enter your password',
+        message: '请输入密码',
       })
       .min(7, {
-        message: 'Password must be at least 7 characters long',
+        message: '密码长度至少为7个字符',
       }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
+    message: '两次输入的密码不一致',
     path: ['confirmPassword'],
   })
 
@@ -49,6 +55,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
+      username: '',
       password: '',
       confirmPassword: '',
     },
@@ -59,17 +66,30 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
       setIsLoading(true)
       const response = await authApi.register({
         email: data.email,
+        username: data.username,
         password: data.password,
       })
       
-      // 存储 token
-      localStorage.setItem('token', response.data.access_token)
+      // 打印响应看看结构
+      console.log('Register response:', response)
       
-      // 注册成功后跳转
-      navigate({ to: '/' })
+      // 直接访问 response 中的 access_token
+      if (response.access_token) {
+        // 存储 token
+        localStorage.setItem('token', response.access_token)
+        
+        // 注册成功提示
+        toast.success('注册成功', {
+          description: '欢迎加入！'
+        })
+        
+        // 确保在设置完 token 后再跳转
+        setTimeout(() => {
+          navigate({ to: '/' })
+        }, 100)
+      }
     } catch (error) {
-      console.error('Registration failed:', error)
-      // 这里可以添加错误提示
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -85,9 +105,22 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
               name='email'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>邮箱</FormLabel>
                   <FormControl>
                     <Input placeholder='name@example.com' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='username'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>用户名</FormLabel>
+                  <FormControl>
+                    <Input placeholder='请输入用户名' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,9 +131,9 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
               name='password'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>密码</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder='********' {...field} />
+                    <PasswordInput placeholder='请输入密码' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,16 +144,16 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
               name='confirmPassword'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>确认密码</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder='********' {...field} />
+                    <PasswordInput placeholder='请再次输入密码' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button className='mt-2' disabled={isLoading}>
-              Create Account
+              创建账户
             </Button>
 
             <div className='relative my-2'>
@@ -128,29 +161,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
                 <span className='w-full border-t' />
               </div>
               <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
-                  Or continue with
-                </span>
               </div>
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                disabled={isLoading}
-              >
-                <IconBrandGithub className='h-4 w-4' /> GitHub
-              </Button>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                disabled={isLoading}
-              >
-                <IconBrandFacebook className='h-4 w-4' /> Facebook
-              </Button>
             </div>
           </div>
         </form>

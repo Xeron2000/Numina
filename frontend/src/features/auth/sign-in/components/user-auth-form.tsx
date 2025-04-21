@@ -18,21 +18,23 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 import { authApi } from '@/api/auth'
 import { useNavigate } from '@tanstack/react-router'
+import { handleServerError } from '@/utils/handle-server-error'
+import { toast } from '@/hooks/use-toast'
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>
 
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, { message: 'Please enter your email' })
-    .email({ message: 'Invalid email address' }),
+    .min(1, { message: '请输入邮箱' })
+    .email({ message: '邮箱格式不正确' }),
   password: z
     .string()
     .min(1, {
-      message: 'Please enter your password',
+      message: '请输入密码',
     })
     .min(7, {
-      message: 'Password must be at least 7 characters long',
+      message: '密码长度至少为7个字符',
     }),
 })
 
@@ -56,14 +58,27 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         password: data.password,
       })
       
-      // 存储 token
-      localStorage.setItem('token', response.data.access_token)
+      // 打印响应看看结构
+      console.log('Login response:', response)
       
-      // 登录成功后跳转
-      navigate({ to: '/' })
+      // 直接访问 response 中的 access_token
+      if (response.access_token) {
+        // 存储 token
+        localStorage.setItem('token', response.access_token)
+        
+        // 登录成功提示
+        toast({
+          title: '登录成功',
+          description: '欢迎回来！'
+        })
+        
+        // 确保在设置完 token 后再跳转
+        setTimeout(() => {
+          navigate({ to: '/' })
+        }, 100)
+      }
     } catch (error) {
-      console.error('Login failed:', error)
-      // 这里可以添加错误提示
+      handleServerError(error)
     } finally {
       setIsLoading(false)
     }
@@ -79,7 +94,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               name='email'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>邮箱</FormLabel>
                   <FormControl>
                     <Input placeholder='name@example.com' {...field} />
                   </FormControl>
@@ -93,23 +108,23 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               render={({ field }) => (
                 <FormItem className='space-y-1'>
                   <div className='flex items-center justify-between'>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>密码</FormLabel>
                     <Link
                       to='/forgot-password'
                       className='text-sm font-medium text-muted-foreground hover:opacity-75'
                     >
-                      Forgot password?
+                      忘记密码？
                     </Link>
                   </div>
                   <FormControl>
-                    <PasswordInput placeholder='********' {...field} />
+                    <PasswordInput placeholder='请输入密码' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button className='mt-2' disabled={isLoading}>
-              Login
+              登录
             </Button>
 
             <div className='relative my-2'>
@@ -118,29 +133,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               </div>
               <div className='relative flex justify-center text-xs uppercase'>
                 <span className='bg-background px-2 text-muted-foreground'>
-                  Or continue with
+                  还没有账号？{' '}
+                  <Link
+                    to='/sign-up'
+                    className='font-medium text-primary hover:underline'
+                  >
+                    立即注册
+                  </Link>
                 </span>
               </div>
             </div>
 
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                disabled={isLoading}
-              >
-                <IconBrandGithub className='h-4 w-4' /> GitHub
-              </Button>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                disabled={isLoading}
-              >
-                <IconBrandFacebook className='h-4 w-4' /> Facebook
-              </Button>
-            </div>
+
           </div>
         </form>
       </Form>
