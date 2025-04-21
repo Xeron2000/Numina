@@ -1,4 +1,5 @@
 import { http } from '@/lib/http'
+import Cookies from 'js-cookie'
 
 export interface LoginCredentials {
   email: string
@@ -20,8 +21,16 @@ export interface AuthResponse {
 }
 
 export const authApi = {
-  login: (credentials: LoginCredentials) =>
-    http.post<AuthResponse>('/api/auth/login', credentials),
+  login: async (credentials: LoginCredentials) => {
+    const response = await http.post<AuthResponse>('/api/auth/login', credentials)
+    // Fix: Remove .data since the interceptor already returns the data
+    Cookies.set('access_token', response.access_token, {
+      path: '/',
+      secure: true,
+      sameSite: 'strict'
+    })
+    return response
+  },
     
   register: (data: RegisterCredentials) =>
     http.post<AuthResponse>('/api/auth/register', data),
