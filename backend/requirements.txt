@@ -3,14 +3,14 @@ uvicorn
 pydantic<2
 SQLAlchemy
 python-jose
-passlib[bcrypt]  # 修改这行
+passlib[bcrypt]
 python-multipart
 pandas
 numpy
 openpyxl
 python-dotenv
 alembic
-bcrypt>=4.0.0   # 指定版本
+bcrypt==4.0.1  # Pin to a specific version
 email-validator
 cachetools
 rich

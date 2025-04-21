@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr  # 添加这行导入
+from pydantic import BaseModel, EmailStr
 from typing import Optional
+from datetime import timedelta  # Add this import
 
-from app.core.security import create_access_token, verify_password
+from app.core.security import create_access_token, verify_password, get_password_hash  # Add get_password_hash
 from app.core.deps import get_current_active_user
+from app.core.config import settings  # Add this import
+from app.core.exceptions import CredentialsException, DuplicateResourceException  # Add this import
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token

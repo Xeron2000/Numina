@@ -1,16 +1,18 @@
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey, DateTime
-from sqlalchemy.sql import func
-from app.db.base_class import Base
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON # Add necessary imports
+from sqlalchemy.orm import relationship
+from app.models.base import BaseModel
 
-class Visualization(Base):
-    __tablename__ = "visualizations"
+class Visualization(BaseModel):
+    __tablename__ = "visualizations" # Make sure you have a tablename
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     type = Column(String, nullable=False)  # 改为 type
     config = Column(JSON, nullable=False)
-    dataset_id = Column(Integer, ForeignKey("datasets.id"), nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="visualizations")
+
+    # Relationship to Dataset (if not already present)
+    dataset_id = Column(Integer, ForeignKey("datasets.id"))
+    dataset = relationship("Dataset") # Assuming a simple relationship here

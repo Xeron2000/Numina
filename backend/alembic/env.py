@@ -13,33 +13,24 @@ from app.models.query import SavedQuery
 from app.models.visualization import Visualization
 from app.models.settings import UserSettings
 from app.models.geospatial import GeoFence
+from app.models.analytics import AnalyticsTask
+from app.models.station import Station
+from app.models.activity import Activity  # Add this if you have activity model
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+# this is the Alembic Config object
 config = context.config
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# 设置数据库 URL（确保在 target_metadata 之前设置）
+# 设置数据库 URL
 config.set_main_option("sqlalchemy.url", "sqlite:///./sql_app.db")
 
-# 设置 target_metadata（这是关键修改）
+# 设置 target_metadata
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -51,14 +42,7 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
@@ -67,12 +51,14 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            render_as_batch=True,  # Enable batch mode for SQLite
+            compare_type=True,     # Compare column types
         )
 
         with context.begin_transaction():
             context.run_migrations()
-
 
 if context.is_offline_mode():
     run_migrations_offline()

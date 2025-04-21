@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000", "http://localhost:5173"]
 
     # SQLite数据库URL
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./app.db"
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./sql_app.db"
     
     # 初始管理员用户
     FIRST_SUPERUSER: str = "admin@example.com"
