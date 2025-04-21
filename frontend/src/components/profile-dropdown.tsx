@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,24 +11,81 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useEffect, useState } from 'react'
+import { authApi } from '@/api/auth'
+import Cookies from 'js-cookie'
+
+interface UserProfile {
+  id: number
+  email: string
+  username: string
+}
 
 export function ProfileDropdown() {
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await authApi.me()
+        // Fix: Access the user object from the response
+        if (response && response.user) {
+          setUser(response.user)
+          console.log('User profile fetched:', response.user)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+        if ((error as any).response?.status === 401) {
+          Cookies.remove('access_token')
+        }
+      }
+    }
+
+    const token = Cookies.get('access_token')
+    if (token) {
+      console.log('Token found:', token)
+      fetchUserProfile()
+    } else {
+      console.log('No token found')
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout()
+      Cookies.remove('access_token')
+      setUser(null)
+      navigate({ to: '/sign-in' })
+    } catch (error) {
+      console.error('Failed to logout:', error)
+    }
+  }
+
+  if (!user) {
+    return (
+      <Button variant="ghost" asChild>
+        <Link to="/sign-in">登录</Link>
+      </Button>
+    )
+  }
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
           <Avatar className='h-8 w-8'>
-            <AvatarImage src='/avatars/01.png' alt='@shadcn' />
-            <AvatarFallback>SN</AvatarFallback>
+            <AvatarImage src='/avatars/01.png' alt={user.username} />
+            <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56' align='end' forceMount>
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col space-y-1'>
-            <p className='text-sm font-medium leading-none'>satnaing</p>
+            <p className='text-sm font-medium leading-none'>{user.username}</p>
             <p className='text-xs leading-none text-muted-foreground'>
-              satnaingdev@gmail.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -36,27 +93,26 @@ export function ProfileDropdown() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link to='/settings'>
-              Profile
+              个人资料
               <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link to='/settings'>
-              Billing
+              账单
               <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link to='/settings'>
-              Settings
+              设置
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Log out
+        <DropdownMenuItem onClick={handleLogout}>
+          退出登录
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
