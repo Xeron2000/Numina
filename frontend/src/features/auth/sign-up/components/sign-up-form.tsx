@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { authApi } from '@/api/auth'
+import { useNavigate } from '@tanstack/react-router'
 
 type SignUpFormProps = HTMLAttributes<HTMLDivElement>
 
@@ -41,6 +43,7 @@ const formSchema = z
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,14 +54,25 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
-
-    setTimeout(() => {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      setIsLoading(true)
+      const response = await authApi.register({
+        email: data.email,
+        password: data.password,
+      })
+      
+      // 存储 token
+      localStorage.setItem('token', response.data.access_token)
+      
+      // 注册成功后跳转
+      navigate({ to: '/' })
+    } catch (error) {
+      console.error('Registration failed:', error)
+      // 这里可以添加错误提示
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (

@@ -34,18 +34,18 @@ export interface AnalyticsTaskList {
 
 export const analyticsApi = {
   getTaskById: (id: number) => 
-    http.get<AnalyticsTask>(`/api/v1/analytics/tasks/${id}`),
+    http.get<AnalyticsTask>(`/api/analytics/tasks/${id}`),
   
   runQuery: (params: { dataset_id: number; query_string: string }) =>
-    http.post<QueryResult>('/api/v1/analytics/query', params),
+    http.post<QueryResult>('/api/analytics/query', params),
     
   deleteTask: (id: number) =>
-    http.delete<void>(`/api/v1/analytics/tasks/${id}`),
+    http.delete<void>(`/api/analytics/tasks/${id}`),
 
   // Add the new method
   createSavedQuery: (data: SavedQueryCreate) =>
-    http.post<SavedQuery>('/api/v1/analytics/saved-queries', data),
+    http.post<SavedQuery>('/api/analytics/saved-queries', data),
   
   getTasks: (params?: { skip?: number; limit?: number }) =>
-    http.get<AnalyticsTaskList>('/api/v1/analytics/tasks', { params }),
+    http.get<AnalyticsTaskList>('/api/analytics/tasks', { params }),
 }

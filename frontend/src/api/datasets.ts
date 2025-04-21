@@ -32,11 +32,11 @@ export interface DatasetCreate {
 export const datasetsApi = {
   // 获取数据集列表
   getAll: (params?: { skip?: number; limit?: number }) =>
-    http.get<DatasetList>('/api/v1/datasets', { params }),
+    http.get<DatasetList>('/api/datasets', { params }),
   
   // 获取单个数据集
   getById: (id: number) =>
-    http.get<Dataset>(`/api/v1/datasets/${id}`),
+    http.get<Dataset>(`/api/datasets/${id}`),
   
   // 上传新数据集
   upload: async (file: File, dataType: string) => {
@@ -44,7 +44,7 @@ export const datasetsApi = {
     formData.append('file', file)
     formData.append('data_type', dataType)
     
-    return http.post('/api/v1/datasets/upload', formData, {
+    return http.post('/api/datasets/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

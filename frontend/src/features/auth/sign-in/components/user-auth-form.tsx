@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { authApi } from '@/api/auth'
+import { useNavigate } from '@tanstack/react-router'
 
 type UserAuthFormProps = HTMLAttributes<HTMLDivElement>
 
@@ -36,6 +38,7 @@ const formSchema = z.object({
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,14 +48,25 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log(data)
-
-    setTimeout(() => {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      setIsLoading(true)
+      const response = await authApi.login({
+        email: data.email,
+        password: data.password,
+      })
+      
+      // 存储 token
+      localStorage.setItem('token', response.data.access_token)
+      
+      // 登录成功后跳转
+      navigate({ to: '/' })
+    } catch (error) {
+      console.error('Login failed:', error)
+      // 这里可以添加错误提示
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (

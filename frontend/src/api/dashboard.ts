@@ -32,17 +32,17 @@ export interface Response<T> {
 export const dashboardApi = {
   // 获取仪表盘统计数据
   getStats: () => 
-    http.get<Response<DashboardStats>>('/api/v1/dashboard/stats'),
+    http.get<Response<DashboardStats>>('/api/dashboard/stats'),
 
   // 获取空气质量趋势
   getTrends: (params: { days?: number }) =>
-    http.get<Response<DashboardStats['air_quality_trends']>>('/api/v1/dashboard/trends', { params }),
+    http.get<Response<DashboardStats['air_quality_trends']>>('/api/dashboard/trends', { params }),
 
   // 获取站点分布
   getDistribution: () =>
-    http.get<Response<DashboardStats['station_distribution']>>('/api/v1/dashboard/distribution'),
+    http.get<Response<DashboardStats['station_distribution']>>('/api/dashboard/distribution'),
 
   // 获取最近活动
   getActivities: (params?: { limit?: number }) =>
-    http.get<Response<DashboardStats['recent_activities']>>('/api/v1/dashboard/activities', { params })
+    http.get<Response<DashboardStats['recent_activities']>>('/api/dashboard/activities', { params })
 }

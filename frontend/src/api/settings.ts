@@ -20,11 +20,11 @@ export interface DisplaySettings {
 
 export const settingsApi = {
   getSettings: () =>
-    http.get<UserSettings>('/api/v1/settings/profile'),
+    http.get<UserSettings>('/api/settings/profile'),
 
   updateAppearance: (data: AppearanceSettings) =>
-    http.put<UserSettings>('/api/v1/settings/appearance', data),
+    http.put<UserSettings>('/api/settings/appearance', data),
 
   updateDisplay: (data: DisplaySettings) =>
-    http.put<UserSettings>('/api/v1/settings/display', data),
+    http.put<UserSettings>('/api/settings/display', data),
 }

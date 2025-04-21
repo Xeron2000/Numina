@@ -17,14 +17,14 @@ export interface AuthResponse {
 
 export const authApi = {
   login: (credentials: LoginCredentials) =>
-    http.post<AuthResponse>('/api/v1/auth/login', credentials),
+    http.post<AuthResponse>('/api/auth/login', credentials),
     
   register: (data: LoginCredentials) =>
-    http.post<AuthResponse>('/api/v1/auth/register', data),
+    http.post<AuthResponse>('/api/auth/register', data),
     
   logout: () => 
-    http.post('/api/v1/auth/logout'),
+    http.post('/api/auth/logout'),
   
   me: () => 
-    http.get('/api/v1/auth/profile'),
+    http.get('/api/auth/profile'),
 }

@@ -32,14 +32,14 @@ export interface MapData {
 
 export const geospatialApi = {
   getFences: () => 
-    http.get<GeoFence[]>('/api/v1/geospatial/fences'),
+    http.get<GeoFence[]>('/api/geospatial/fences'),
   
   createFence: (data: Omit<GeoFence, 'id' | 'owner_id' | 'created_at' | 'updated_at'>) =>
-    http.post<GeoFence>('/api/v1/geospatial/fences', data),
+    http.post<GeoFence>('/api/geospatial/fences', data),
 
   getMapData: () =>
-    http.get<MapData>('/api/v1/geospatial/map'),
+    http.get<MapData>('/api/geospatial/map'),
 
   getHeatmapData: () =>
-    http.get<MapData>('/api/v1/geospatial/heatmap'),
+    http.get<MapData>('/api/geospatial/heatmap'),
 }
