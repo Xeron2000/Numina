@@ -15,11 +15,10 @@ app = FastAPI(
 # CORS设置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:8000", "http://127.0.0.1:8000"],  # 添加更多允许的源
+    allow_origins=["http://localhost:5173"],  # Your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]  # 添加这行以暴露所有响应头
 )
 
 # Root endpoint redirect to docs

@@ -30,6 +30,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { settingsApi } from '@/api/settings'
+import { useEffect } from 'react'
 
 const languages = [
   { label: '英语', value: 'en' },
@@ -65,6 +67,8 @@ type AccountFormValues = z.infer<typeof accountFormSchema>
 // This can come from your database or API.
 const defaultValues: Partial<AccountFormValues> = {
   name: '',
+  language: '',  // Add default value for language
+  dob: undefined // Add explicit undefined for dob
 }
 
 export function AccountForm() {
@@ -73,15 +77,49 @@ export function AccountForm() {
     defaultValues,
   })
 
-  function onSubmit(data: AccountFormValues) {
-    toast({
-      title: '您提交了以下内容：',
-      description: (
-        <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-          <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await settingsApi.getSettings()
+        if (settings?.data?.display_settings) {
+          const displaySettings = settings.data.display_settings
+          form.reset({
+            name: displaySettings.name || '',
+            language: displaySettings.language || '',
+            dob: displaySettings.dob ? new Date(displaySettings.dob) : undefined,
+          })
+        }
+      } catch (error) {
+        toast({
+          title: '加载失败',
+          description: '无法加载您的设置，请刷新页面重试。',
+          variant: 'destructive',
+        })
+      }
+    }
+    
+    loadSettings()
+  }, [form])
+
+  async function onSubmit(data: AccountFormValues) {
+    try {
+      await settingsApi.updateDisplay({
+        name: data.name,
+        dob: data.dob.toISOString(),
+        language: data.language
+      })
+      
+      toast({
+        title: '设置已更新',
+        description: '您的账户设置已成功保存。',
+      })
+    } catch (error) {
+      toast({
+        title: '更新失败',
+        description: '保存设置时发生错误，请稍后重试。',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
