@@ -51,18 +51,23 @@ export function AppearanceForm() {
   async function onSubmit(data: AppearanceFormValues) {
     try {
       setLoading(true)
-      const response = await settingsApi.updateAppearance(data)
       
-      if (response.data.code === 200) {
-        if (data.font !== font) setFont(data.font)
-        if (data.theme !== theme) setTheme(data.theme)
-        
-        toast({
-          title: '设置已更新',
-          description: '外观设置已成功保存。',
-        })
+      const response = await settingsApi.updateAppearance(data)
+      console.log('后端响应:', response) // 添加调试日志
+      
+      // 更新主题和字体
+      setTheme(data.theme)
+      if (data.font !== font) {
+        setFont(data.font)
       }
+      
+      // 显示成功提示
+      toast({
+        title: '设置已更新',
+        description: '外观设置已成功保存。',
+      })
     } catch (error) {
+      console.error('更新设置错误:', error) // 添加错误日志
       toast({
         title: '更新失败',
         description: '保存设置时发生错误，请稍后重试。',

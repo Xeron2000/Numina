@@ -45,13 +45,12 @@ export default function ProfileForm() {
 
   async function onSubmit(values: ProfileFormValues) {
     try {
-      const { data } = await settingsApi.updateProfile(values)
-      if (data.code === 200) {
-        toast({
-          title: '更新成功',
-          description: '您的个人资料已更新。',
-        })
-      }
+      await settingsApi.updateProfile(values)
+      // 直接显示成功提示
+      toast({
+        title: '更新成功',
+        description: '您的个人资料已更新。',
+      })
     } catch (error) {
       toast({
         title: '更新失败',

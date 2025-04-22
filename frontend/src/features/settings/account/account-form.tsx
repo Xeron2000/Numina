@@ -90,18 +90,17 @@ export function AccountForm() {
 
   async function onSubmit(values: AccountFormValues) {
     try {
-      const { data } = await settingsApi.updateAccountSettings({
+      const response = await settingsApi.updateAccountSettings({
         name: values.name,
         dob: values.dob.toISOString(),
         language: values.language,
       })
       
-      if (data.code === 200) {
-        toast({
-          title: '设置已更新',
-          description: '您的账户设置已成功保存。',
-        })
-      }
+      // 直接显示成功提示，不需要检查 code
+      toast({
+        title: '设置已更新',
+        description: '您的账户设置已成功保存。',
+      })
     } catch (error) {
       toast({
         title: '更新失败',

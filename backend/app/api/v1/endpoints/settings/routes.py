@@ -86,7 +86,7 @@ async def update_display_settings(
             "data": None
         }
 
-@router.put("/appearance", response_model=UserSettingsSchema)
+@router.put("/appearance", response_model=Response[UserSettingsSchema])
 async def update_appearance_settings(
     appearance: AppearanceSettings,
     db: Session = Depends(get_db),
@@ -106,7 +106,11 @@ async def update_appearance_settings(
     
     db.commit()
     db.refresh(settings)
-    return settings
+    return {
+        "code": 200,
+        "message": "success",
+        "data": settings
+    }
 
 # 获取外观设置
 @router.get("/appearance", response_model=Response[AppearanceSettings])
