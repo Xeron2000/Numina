@@ -66,4 +66,4 @@ logs
 *.log
 
 # data
-frontend/src/features/geospatial/map/data
+frontend/src/features/geospatial/map/data/province_all
