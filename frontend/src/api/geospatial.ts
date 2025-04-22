@@ -30,6 +30,16 @@ export interface MapData {
   }
 }
 
+export interface CityResponseData {
+  cityData:  Record<string, any>;
+  provinceData: Array<any>;
+}
+
+export interface CityData {
+  name: string
+  value: []
+}
+
 export const geospatialApi = {
   getFences: () => 
     http.get<GeoFence[]>('/api/geospatial/fences'),
@@ -41,5 +51,16 @@ export const geospatialApi = {
     http.get<MapData>('/api/geospatial/map'),
 
   getHeatmapData: () =>
-    http.get<MapData>('/api/geospatial/heatmap'),
+    http.get<MapData>('/api/v1/geospatial/heatmap'),
+
+  getCityData: () =>
+    http.get<CityResponseData>('/api/geospatial/city'),
+
+  getCitySiteData: (cityname: string) =>
+    http.get<CityData>('/api/geospatial/citysite', {
+      params: { cityname }
+    }),
+
+  getCityHistoryData: () =>
+    http.get<CityData>('/api/geospatial/cityhistory'),
 }

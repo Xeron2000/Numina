@@ -14,3 +14,4 @@ bcrypt==4.0.1  # Pin to a specific version
 email-validator
 cachetools
 rich
+requests
