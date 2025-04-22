@@ -61,6 +61,8 @@ export const geospatialApi = {
       params: { cityname }
     }),
 
-  getCityHistoryData: () =>
-    http.get<CityData>('/api/geospatial/cityhistory'),
+  getCityHistoryData: (citycode: any) =>
+    http.get('/api/geospatial/cityhistory', {
+      params: { citycode }
+    }),
 }

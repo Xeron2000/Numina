@@ -78,8 +78,8 @@ provinceKey = {
 
 @router.get("/city")
 async def get_city_data(
-    # db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     data = collect_aqi_data()
     provinceData = {}
@@ -97,6 +97,8 @@ async def get_city_data(
 
     for key, value in provinceData.items():
         provinceData1.append({"name":key,"value":sum(value) // len(value)})
+
+    print("cityData")
 
     return {
         "cityData": cityData,
@@ -123,8 +125,8 @@ citysiteKey = [
 @router.get("/citysite")
 async def get_citysite_data(
     cityname: str,
-    # db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):  
     print(cityname)
     citysiteData = []
@@ -152,8 +154,25 @@ async def get_citysite_data(
 
 @router.get("/cityhistory")
 async def get_cityhistory_data(
-    citycode: int,
-    # db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_active_user)
+    citycode: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
-    pass
+    print(citycode)
+    cityhistoryData = []
+
+    url = f'https://air.cnemc.cn:18007/HourChangesPublish/GetCityRealTimeAqiHistoryByCondition?citycode={citycode}'
+    
+    headers = {
+            "User-Agent": "Mozilla/5.0",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://air.cnemc.cn:18007/",
+    }
+
+    response = requests.get(url, headers=headers)
+    datas = response.json()
+
+    for item in datas:
+        cityhistoryData.append([item["TimePointStr"],item["AQI"]])
+
+    return cityhistoryData

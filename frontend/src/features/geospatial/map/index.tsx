@@ -9,8 +9,40 @@ import * as echarts from 'echarts';
 import chinaMapData from '@/features/geospatial/map/data/province.json';
 import { geospatialApi } from '@/api/geospatial';
 
-const { getCitySiteData, getCityData } = geospatialApi;
+const { getCitySiteData, getCityData} = geospatialApi;
 
+import {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AlertCircle } from "lucide-react";
+
+interface CityData {
+  [key: string]: {
+    Area: string;
+    AQI: string;
+    Adcode: string;
+    [key: string]: string;
+  };
+}
+
+interface CityResponseData {
+  cityData: {
+    [province: string]: CityData[];
+  };
+  provinceData: {
+    name: string;
+    value: number;
+  }[];
+}
 
 export default function GeospatialMap() {
   const chartRef = useRef<HTMLDivElement>(null);
@@ -19,18 +51,45 @@ export default function GeospatialMap() {
   const [searchText, setSearchText] = useState('');
   const [airQualityData, setAirQualityData] = useState();
 
-  const citySiteData = async (cityName: string) => {
-    const data = await getCitySiteData(cityName);
-    console.log(data);
+  const citySiteData = async (cityName: string, currentProvince: string) => {
+    const dataSite = await getCitySiteData(cityName);
+    console.log(dataSite);
+    getCode(cityName, currentProvince);
+  }
+
+  const getCode = (name: string, provinceName: string) => {
+    const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+    console.log('当前省份:', provinceName);
+    const datas = raw[provinceName] || {};
+    console.log('城市数据:', datas);
+    for (const data of datas) {
+      for (const key in data) {
+        if (key === name) {
+          return data[key]["Adcode"];
+        }
+      }
+    }
   }
 
   const allCityData = async () => {
     console.log('allCityData')
     const response = await getCityData();
-    sessionStorage.setItem('cityData', JSON.stringify(response.cityData));
-    sessionStorage.setItem('provinceData', JSON.stringify(response.provinceData));
+    const data = response.data as CityResponseData;
+    console.log("cityData", data.cityData)
+    sessionStorage.setItem('cityData', JSON.stringify(data.cityData));
+    sessionStorage.setItem('provinceData', JSON.stringify(data.provinceData));
   }
-
+  const getIndicatorDescription = (indicator: string) => {
+    const descriptions: Record<string, string> = {
+      'PM2.5': '细颗粒物，直径小于等于2.5微米的颗粒物',
+      'PM10': '可吸入颗粒物，直径小于等于10微米的颗粒物',
+      'SO₂': '二氧化硫，主要来源于化石燃料燃烧',
+      'NO₂': '二氧化氮，主要来源于机动车尾气和工业排放',
+      'CO': '一氧化碳，不完全燃烧产生的有害气体',
+      'O₃': '臭氧，光化学反应产生的次生污染物'
+    };
+    return descriptions[indicator] || '暂无说明';
+  };
   // 初始化图表
   useEffect(() => {
 
@@ -107,6 +166,7 @@ export default function GeospatialMap() {
       // 注册地图并渲染
       echarts.registerMap(mapName, mapData);
       console.log(currentData)
+      console.log("currentData", currentData)
       renderMap(mapName, currentData);
     } catch (error) {
       console.error("加载地图数据失败:", error);
@@ -155,21 +215,19 @@ export default function GeospatialMap() {
     };
 
     chart.current.setOption(option);
-    // 为地图添加点击事件
-    chart.current.off('click');
-
+    // 在 renderMap 函数中修改点击事件处理
     chart.current.on('click', function (params) {
       if (mapName === 'china') {
         resetZoom();
         const provinceName = params.name;
         setCurrentView(provinceName);
+        console.log('点击省份:', provinceName);
         loadMap(provinceName);
       } else {
         // 处理城市点击事件
-        console.log("adcode", params);
         const cityName = params.name;
-        setCurrentView(cityName);
-        console.log('城市点击事件:', cityName);
+        console.log('点击城市:', cityName, '所在省份:', mapName);
+        citySiteData(cityName, mapName); // 传入当前地图名称作为省份名
       }
     });
   };
@@ -190,21 +248,21 @@ export default function GeospatialMap() {
   };
 
   useEffect(() => {
-
+    console.log(currentView)
   }, [currentView, airQualityData])
 
   // 处理搜索
   const handleSearch = () => {
     if (!searchText) return;
 
-    const province = airQualityData.find(item =>
-      item.name.includes(searchText)
-    );
+    // const province = airQualityData.find(item =>
+    //   item.name.includes(searchText)
+    // );
 
-    if (province && currentView === 'china') {
-      setCurrentView(province.name);
-      loadMap(province.name);
-    }
+    // if (province && currentView === 'china') {
+    //   setCurrentView(province.name);
+    //   loadMap(province.name);
+    // }
   };
 
   return (
@@ -276,7 +334,87 @@ export default function GeospatialMap() {
             </Card>
             <Card className="p-4">
               <div className="space-y-4">
-
+                <div>
+                  <CardHeader className="px-0 pt-0">
+                    <CardTitle className="text-lg font-semibold">空气质量详情</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-0">
+                    <div className="space-y-3">
+                      <div className="relative w-full h-32 bg-white rounded-lg flex items-center justify-center mb-4">
+                        <div className="absolute left-4 top-4">
+                          <span className="text-sm text-muted-foreground">北京市</span>
+                        </div>
+                        <div className="absolute right-4 top-4">
+                          <span className="text-xs text-muted-foreground">04月23日13:00 更新</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-24 h-24">
+                            <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                fill="none"
+                                stroke="#e5e7eb"
+                                strokeWidth="10"
+                              />
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="45"
+                                fill="none"
+                                stroke="#3b82f6"
+                                strokeWidth="10"
+                                strokeDasharray="282.7"
+                                strokeDashoffset={282.7 - (282.7 * 59) / 500}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-3xl font-bold">59</span>
+                              <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+                                良
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {[
+                          { label: 'PM2.5', value: 18, max: 100, unit: 'μg/m³' },
+                          { label: 'PM10', value: 67, max: 100, unit: 'μg/m³' },
+                          { label: 'SO₂', value: 4, max: 100, unit: 'μg/m³' },
+                          { label: 'NO₂', value: 7, max: 100, unit: 'μg/m³' }
+                        ].map((item, index) => (
+                          <div key={index} className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <span className="text-sm text-muted-foreground cursor-help">{item.label}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-sm">{getIndicatorDescription(item.label)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <span className="text-sm font-medium">{item.value} {item.unit}</span>
+                            </div>
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-blue-500 rounded-full"
+                                style={{ width: `${(item.value / item.max) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex items-start gap-2 bg-yellow-50 p-3 rounded-lg">
+                        <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
+                        <p className="text-sm text-yellow-700">推荐少数敏感人群减少户外活动</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
               </div>
             </Card>
           </div>
