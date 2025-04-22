@@ -1,7 +1,7 @@
 import { Outlet } from '@tanstack/react-router'
 import {
-  IconBrowserCheck,
-  IconNotification,
+  // IconBrowserCheck,
+  // IconNotification,
   IconPalette,
   IconTool,
   IconUser,
@@ -58,14 +58,14 @@ const sidebarNavItems = [
     icon: <IconPalette size={18} />,
     href: '/settings/appearance',
   },
-  {
-    title: '通知设置',
-    icon: <IconNotification size={18} />,
-    href: '/settings/notifications',
-  },
-  {
-    title: '显示设置',
-    icon: <IconBrowserCheck size={18} />,
-    href: '/settings/display',
-  },
+  // {
+  //   title: '通知设置',
+  //   icon: <IconNotification size={18} />,
+  //   href: '/settings/notifications',
+  // },
+  // {
+  //   title: '显示设置',
+  //   icon: <IconBrowserCheck size={18} />,
+  //   href: '/settings/display',
+  // },
 ]

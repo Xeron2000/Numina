@@ -136,14 +136,14 @@ export const sidebarData: SidebarData = {
               title: '外观设置',
               url: '/settings/appearance',
             },
-            {
-              title: '显示设置',
-              url: '/settings/display',
-            },
-            {
-              title: '通知设置',
-              url: '/settings/notifications',
-            }
+            // {
+            //   title: '显示设置',
+            //   url: '/settings/display',
+            // },
+            // {
+            //   title: '通知设置',
+            //   url: '/settings/notifications',
+            // }
           ]
         },
       ],
