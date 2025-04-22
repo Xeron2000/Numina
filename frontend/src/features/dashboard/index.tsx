@@ -74,7 +74,7 @@ export default function Dashboard() {
     <>
       <Header>
         <h2 className="text-lg font-semibold">仪表盘</h2>
-        <Search />
+        {/* <Search /> */}
         <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />
           <ProfileDropdown />
