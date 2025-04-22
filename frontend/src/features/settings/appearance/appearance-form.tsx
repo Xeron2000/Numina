@@ -18,6 +18,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { settingsApi } from '@/api/settings'
+import { useState } from 'react'
 
 const appearanceFormSchema = z.object({
   theme: z.enum(['light', 'dark'], {
@@ -34,8 +36,8 @@ type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 export function AppearanceForm() {
   const { font, setFont } = useFont()
   const { theme, setTheme } = useTheme()
+  const [loading, setLoading] = useState(false)
 
-  // This can come from your database or API.
   const defaultValues: Partial<AppearanceFormValues> = {
     theme: theme as 'light' | 'dark',
     font,
@@ -46,18 +48,29 @@ export function AppearanceForm() {
     defaultValues,
   })
 
-  function onSubmit(data: AppearanceFormValues) {
-    if (data.font != font) setFont(data.font)
-    if (data.theme != theme) setTheme(data.theme)
-
-    toast({
-      title: 'You submitted the following values:',
-      description: (
-        <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-          <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+  async function onSubmit(data: AppearanceFormValues) {
+    try {
+      setLoading(true)
+      const response = await settingsApi.updateAppearance(data)
+      
+      if (response.data.code === 200) {
+        if (data.font !== font) setFont(data.font)
+        if (data.theme !== theme) setTheme(data.theme)
+        
+        toast({
+          title: '设置已更新',
+          description: '外观设置已成功保存。',
+        })
+      }
+    } catch (error) {
+      toast({
+        title: '更新失败',
+        description: '保存设置时发生错误，请稍后重试。',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -165,7 +178,9 @@ export function AppearanceForm() {
             </FormItem>
           )}
         />
-        <Button type='submit'>保存外观设置</Button>
+        <Button type='submit' disabled={loading}>
+          {loading ? '保存中...' : '保存外观设置'}
+        </Button>
       </form>
     </Form>
   )

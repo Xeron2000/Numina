@@ -2,27 +2,27 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, Literal
 
 class UserSettings(BaseModel):
-    id: Optional[int] = None
-    theme: Literal['light', 'dark', 'system'] = 'light'
-    language: str = 'zh-CN'
-    notifications_enabled: bool = True
-    display_settings: Optional[Dict[str, Any]] = None
+    id: int
+    theme: str
+    language: str
     map_settings: Optional[Dict[str, Any]] = None
-    user_id: Optional[int] = None
+    user_id: int
 
     class Config:
         from_attributes = True
 
 class AppearanceSettings(BaseModel):
-    theme: Literal['light', 'dark', 'system']
+    theme: str
+    font: str
 
 class DisplaySettings(BaseModel):
-    name: Optional[str] = None
-    language: Optional[str] = None
-    dob: Optional[str] = None
+    __root__: Dict[str, Any]
 
-class MapSettings(BaseModel):
-    default_center: Optional[Dict[str, float]] = None
-    default_zoom: Optional[int] = 12
-    map_style: Optional[str] = "streets"
-    show_labels: Optional[bool] = True
+class ProfileUpdateDto(BaseModel):
+    username: str
+    email: str
+
+class AccountSettings(BaseModel):
+    name: str
+    language: str
+    dob: str

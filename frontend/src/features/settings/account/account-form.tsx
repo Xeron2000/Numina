@@ -34,15 +34,8 @@ import { settingsApi } from '@/api/settings'
 import { useEffect } from 'react'
 
 const languages = [
-  { label: '英语', value: 'en' },
-  { label: '法语', value: 'fr' },
-  { label: '德语', value: 'de' },
-  { label: '西班牙语', value: 'es' },
-  { label: '葡萄牙语', value: 'pt' },
-  { label: '俄语', value: 'ru' },
-  { label: '日语', value: 'ja' },
-  { label: '韩语', value: 'ko' },
-  { label: '中文', value: 'zh' },
+  { label: '中文', value: 'zh-CN' },
+  { label: '英语', value: 'en-US' },
 ] as const
 
 const accountFormSchema = z.object({
@@ -64,29 +57,24 @@ const accountFormSchema = z.object({
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-// This can come from your database or API.
-const defaultValues: Partial<AccountFormValues> = {
-  name: '',
-  language: '',  // Add default value for language
-  dob: undefined // Add explicit undefined for dob
-}
-
 export function AccountForm() {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
-    defaultValues,
+    defaultValues: {
+      name: '',
+      language: 'zh-CN',
+    },
   })
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const settings = await settingsApi.getSettings()
-        if (settings?.data?.display_settings) {
-          const displaySettings = settings.data.display_settings
+        const { data } = await settingsApi.getAccountSettings()
+        if (data.code === 200) {
           form.reset({
-            name: displaySettings.name || '',
-            language: displaySettings.language || '',
-            dob: displaySettings.dob ? new Date(displaySettings.dob) : undefined,
+            name: data.data.name,
+            language: data.data.language,
+            dob: data.data.dob ? new Date(data.data.dob) : undefined,
           })
         }
       } catch (error) {
@@ -97,22 +85,23 @@ export function AccountForm() {
         })
       }
     }
-    
     loadSettings()
   }, [form])
 
-  async function onSubmit(data: AccountFormValues) {
+  async function onSubmit(values: AccountFormValues) {
     try {
-      await settingsApi.updateDisplay({
-        name: data.name,
-        dob: data.dob.toISOString(),
-        language: data.language
+      const { data } = await settingsApi.updateAccountSettings({
+        name: values.name,
+        dob: values.dob.toISOString(),
+        language: values.language,
       })
       
-      toast({
-        title: '设置已更新',
-        description: '您的账户设置已成功保存。',
-      })
+      if (data.code === 200) {
+        toast({
+          title: '设置已更新',
+          description: '您的账户设置已成功保存。',
+        })
+      }
     } catch (error) {
       toast({
         title: '更新失败',
@@ -134,9 +123,6 @@ export function AccountForm() {
               <FormControl>
                 <Input placeholder='输入您的姓名' {...field} />
               </FormControl>
-              <FormDescription>
-                这是您的显示名称。
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
