@@ -1,5 +1,7 @@
+import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import Cookies from 'js-cookie'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { authApi } from '@/api/auth'
 import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -7,11 +9,34 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
 
 export const Route = createFileRoute('/_authenticated')({
-  component: RouteComponent,
+  beforeLoad: () => {
+    const token = Cookies.get('access_token')
+    if (!token) {
+      throw redirect({
+        to: '/sign-in',
+      })
+    }
+  },
+  component: AuthenticatedLayout,
 })
 
-function RouteComponent() {
+function AuthenticatedLayout() {
+  const navigate = useNavigate()
   const defaultOpen = Cookies.get('sidebar:state') !== 'false'
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        await authApi.me()
+      } catch (error) {
+        Cookies.remove('access_token')
+        navigate({ to: '/sign-in' })
+      }
+    }
+
+    verifyAuth()
+  }, [navigate])
+
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
