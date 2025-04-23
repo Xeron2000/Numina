@@ -8,7 +8,8 @@ services:
       args:
         - VITE_API_URL=${API_URL}
     environment:
-        - BACKEND_URL=${API_URL}
+      - API_URL=${API_URL}
+      - NGINX_API_URL=${API_URL}  # Add this line to make it available for nginx
     ports:
       - "80:80"
     depends_on:
