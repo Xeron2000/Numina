@@ -160,7 +160,6 @@ async def get_cityhistory_data(
 ):
     print(citycode)
     cityhistoryData = []
-
     url = f'https://air.cnemc.cn:18007/HourChangesPublish/GetCityRealTimeAqiHistoryByCondition?citycode={citycode}'
     
     headers = {
@@ -170,9 +169,12 @@ async def get_cityhistory_data(
     }
 
     response = requests.get(url, headers=headers)
-    datas = response.json()
-
-    for item in datas:
-        cityhistoryData.append([item["TimePointStr"],item["AQI"]])
+    try:
+        data = response.json()
+        for item in data:
+            cityhistoryData.append([item["TimePointStr"], item["AQI"]])
+    except Exception as e:
+        print(f"Error processing response: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process city history data")
 
     return cityhistoryData

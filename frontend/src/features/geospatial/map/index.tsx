@@ -9,7 +9,7 @@ import * as echarts from 'echarts';
 import chinaMapData from '@/features/geospatial/map/data/province.json';
 import { geospatialApi } from '@/api/geospatial';
 
-const { getCitySiteData, getCityData} = geospatialApi;
+const { getCitySiteData, getCityData, getCityHistoryData} = geospatialApi;
 
 import {
   CardContent,
@@ -54,22 +54,27 @@ export default function GeospatialMap() {
   const citySiteData = async (cityName: string, currentProvince: string) => {
     const dataSite = await getCitySiteData(cityName);
     console.log(dataSite);
-    getCode(cityName, currentProvince);
+    const code = getCode(cityName, currentProvince);
+    if (code) {
+      const response = await getCityHistoryData(String(code));
+      console.log(response);
+    }
   }
 
   const getCode = (name: string, provinceName: string) => {
     const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
-    console.log('当前省份:', provinceName);
-    const datas = raw[provinceName] || {};
-    console.log('城市数据:', datas);
-    for (const data of datas) {
-      for (const key in data) {
-        if (key === name) {
-          return data[key]["Adcode"];
-        }
+    const datas = raw[provinceName] || [];  // 确保是数组
+    console.log('完整数据:', datas);
+    console.log('城市名称:', name);
+    console.log(datas.length)
+    for (let i = 0; i < datas.length; i++) {
+      const city = datas[i];
+      if (name in city) {
+        return city[name]["CityCode"]
       }
     }
-  }
+    return ""; // 如果没有找到，返回空字符串或其他默认值 
+}
 
   const allCityData = async () => {
     console.log('allCityData')
@@ -148,7 +153,6 @@ export default function GeospatialMap() {
       } else {
         const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
         const datas = raw[mapName] || {};
-        console.log(datas)
         for (const data of datas) {
           for (const key in data) {
             if (data.hasOwnProperty(key)) {
@@ -165,8 +169,6 @@ export default function GeospatialMap() {
 
       // 注册地图并渲染
       echarts.registerMap(mapName, mapData);
-      console.log(currentData)
-      console.log("currentData", currentData)
       renderMap(mapName, currentData);
     } catch (error) {
       console.error("加载地图数据失败:", error);
@@ -215,6 +217,7 @@ export default function GeospatialMap() {
     };
 
     chart.current.setOption(option);
+    chart.current.off('click'); // 移除之前的点击事件处理函数
     // 在 renderMap 函数中修改点击事件处理
     chart.current.on('click', function (params) {
       if (mapName === 'china') {
@@ -248,7 +251,7 @@ export default function GeospatialMap() {
   };
 
   useEffect(() => {
-    console.log(currentView)
+    
   }, [currentView, airQualityData])
 
   // 处理搜索
