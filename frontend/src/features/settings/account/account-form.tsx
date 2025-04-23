@@ -88,13 +88,8 @@ export function AccountForm() {
     loadSettings()
   }, [form])
 
-  async function onSubmit(values: AccountFormValues) {
+  async function onSubmit(_values: AccountFormValues) {
     try {
-      const response = await settingsApi.updateAccountSettings({
-        name: values.name,
-        dob: values.dob.toISOString(),
-        language: values.language,
-      })
       
       // 直接显示成功提示，不需要检查 code
       toast({

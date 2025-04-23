@@ -6,18 +6,29 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { datasetsApi } from '@/api/datasets'
 
+interface Dataset {
+  id: number
+  name: string
+}
+
+interface DatasetResponse {
+  data: {
+    items: Dataset[]
+  }
+}
+
 interface DatasetSelectorProps {
   value: number | null
   onChange: (value: number) => void
 }
 
 export function DatasetSelector({ value, onChange }: DatasetSelectorProps) {
-  const { data: datasets } = useQuery({
+  const { data: datasets } = useQuery<DatasetResponse>({
     queryKey: ['datasets'],
     queryFn: () => datasetsApi.getAll()
   })
 
-  const selectedDataset = datasets?.data.find(dataset => dataset.id === value)
+  const selectedDataset = datasets?.data.items.find((dataset) => dataset.id === value)
 
   return (
     <Popover>
@@ -36,7 +47,7 @@ export function DatasetSelector({ value, onChange }: DatasetSelectorProps) {
           <CommandInput placeholder="搜索数据集..." />
           <CommandEmpty>未找到数据集</CommandEmpty>
           <CommandGroup>
-            {datasets?.data.map((dataset) => (
+            {datasets?.data.items.map((dataset) => (
               <CommandItem
                 key={dataset.id}
                 value={dataset.name}

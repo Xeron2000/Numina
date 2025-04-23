@@ -22,8 +22,7 @@ export interface AuthResponse {
 
 export const authApi = {
   login: async (credentials: LoginCredentials) => {
-    const response = await http.post<AuthResponse>('/api/auth/login', credentials)
-    // Fix: Remove .data since the interceptor already returns the data
+    const response = await http.post<AuthResponse>('/api/auth/login', credentials) as unknown as AuthResponse
     Cookies.set('access_token', response.access_token, {
       path: '/',
       secure: true,
@@ -33,11 +32,11 @@ export const authApi = {
   },
     
   register: (data: RegisterCredentials) =>
-    http.post<AuthResponse>('/api/auth/register', data),
+    http.post<AuthResponse>('/api/auth/register', data) as unknown as Promise<AuthResponse>,
     
   logout: () => 
     http.post('/api/auth/logout'),
   
   me: () => 
-    http.get('/api/auth/profile'),
+    http.get<AuthResponse>('/api/auth/profile') as unknown as Promise<AuthResponse>,
 }

@@ -46,6 +46,11 @@ const formSchema = z
     path: ['confirmPassword'],
   })
 
+interface AuthResponse {
+  access_token: string;
+  token_type: string;
+}
+
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
@@ -67,22 +72,15 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
         email: data.email,
         username: data.username,
         password: data.password,
-      })
+      }) as unknown as AuthResponse  // 使用类型断言
       
-      // 打印响应看看结构
-      console.log('Register response:', response)
-      
-      // 直接访问 response 中的 access_token
       if (response.access_token) {
-        // 存储 token
         localStorage.setItem('token', response.access_token)
         
-        // 注册成功提示
         toast.success('注册成功', {
           description: '欢迎加入！'
         })
         
-        // 确保在设置完 token 后再跳转
         setTimeout(() => {
           navigate({ to: '/' })
         }, 100)

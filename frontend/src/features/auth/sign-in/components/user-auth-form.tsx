@@ -37,6 +37,11 @@ const formSchema = z.object({
     }),
 })
 
+interface AuthResponse {
+  access_token: string;
+  token_type: string;
+}
+
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
@@ -55,23 +60,16 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       const response = await authApi.login({
         email: data.email,
         password: data.password,
-      })
+      }) as unknown as AuthResponse  // 直接断言为 AuthResponse 类型
       
-      // 打印响应看看结构
-      console.log('Login response:', response)
-      
-      // 直接访问 response 中的 access_token
       if (response.access_token) {
-        // 存储 token
         localStorage.setItem('token', response.access_token)
         
-        // 登录成功提示
         toast({
           title: '登录成功',
           description: '欢迎回来！'
         })
         
-        // 确保在设置完 token 后再跳转
         setTimeout(() => {
           navigate({ to: '/' })
         }, 100)

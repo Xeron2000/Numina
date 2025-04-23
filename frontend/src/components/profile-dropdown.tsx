@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useEffect, useState } from 'react'
@@ -21,6 +20,10 @@ interface UserProfile {
   username: string
 }
 
+interface MeResponse {
+  user: UserProfile
+}
+
 export function ProfileDropdown() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const navigate = useNavigate()
@@ -28,8 +31,7 @@ export function ProfileDropdown() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await authApi.me()
-        // Fix: Access the user object from the response
+        const response = await authApi.me() as unknown as MeResponse
         if (response && response.user) {
           setUser(response.user)
           console.log('User profile fetched:', response.user)
