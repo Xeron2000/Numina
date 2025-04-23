@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${API_URL}
+    environment:
+        - BACKEND_URL=${API_URL}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SQLALCHEMY_DATABASE_URI=sqlite:///./sql_app.db
+      - JWT_SECRET=${JWT_SECRET}
+      - ENVIRONMENT=production
+    volumes:
+      - sqlite_data:/app/data
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # 移除 db 服务，因为使用 SQLite
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  sqlite_data:
+    driver: local
