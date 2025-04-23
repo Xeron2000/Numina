@@ -14,12 +14,17 @@ export default function Datasets() {
     queryFn: async () => {
       try {
         const response = await datasetsApi.getAll()
-        return response.data
+
+        console.log('response', response)
+        if (!response) {
+          throw new Error('No data received from server')
+        }
+        return response
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to fetch datasets'
+          title: '错误',
+          description: '获取数据集失败'
         })
         throw error
       }

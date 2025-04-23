@@ -1,15 +1,21 @@
 import { useEffect, useState, useRef } from 'react';
+import * as echarts from 'echarts';
+import { format } from 'date-fns';
+import { Search, ArrowLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+
 import { ErrorBoundary } from '@/components/error-boundary';
-import * as echarts from 'echarts';
 import chinaMapData from '@/features/geospatial/map/data/province.json';
 import { geospatialApi } from '@/api/geospatial';
+import { datasetsApi } from '@/api/datasets';
 
 const { getCitySiteData, getCityData, getCityHistoryData} = geospatialApi;
+const { upload, uploaddict } = datasetsApi;
 
 import {
   CardContent,
@@ -255,171 +261,193 @@ export default function GeospatialMap() {
   }, [currentView, airQualityData])
 
   // 处理搜索
-  const handleSearch = () => {
-    if (!searchText) return;
+  // const handleSearch = () => {
+  //   if (!searchText) return;
 
-    // const province = airQualityData.find(item =>
-    //   item.name.includes(searchText)
-    // );
+  //   // const province = airQualityData.find(item =>
+  //   //   item.name.includes(searchText)
+  //   // );
 
-    // if (province && currentView === 'china') {
-    //   setCurrentView(province.name);
-    //   loadMap(province.name);
-    // }
-  };
+  //   // if (province && currentView === 'china') {
+  //   //   setCurrentView(province.name);
+  //   //   loadMap(province.name);
+  //   // }
+  // };
+  const dataSets = () => {
+    console.log(currentView)
+    if (currentView === 'china') {
+      const data = JSON.parse(sessionStorage.getItem('cityData') || '{}')
+      console.log(currentView)
+      const response = uploaddict(data);
+      console.log(response)
+    } else {
+      const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+      const datas = raw[currentView] || [];  // 确保是数组
+      console.log(currentView);
+      const response = upload(datas, currentView);
+      console.log(response)
+    }
+  }
 
   return (
     <ErrorBoundary>
-      <div className="container">
-        <Header>
-        <div className="w-full flex flex-row items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">地图分析</h2>
-              <p className="text-sm text-muted-foreground">
-                空气质量数据的地理空间分析
-              </p>
+      <div className="flex min-h-screen flex-col">
+        <Header className="border-b">
+          <div className="flex h-16 items-center px-4">
+            <div className="flex flex-1 items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-lg font-semibold">地理空间分析</h2>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{currentView === 'china' ? '全国' : currentView}</span>
+              </div>
             </div>
-            <div>
-              <div className="flex gap-2">
+            <div className="flex items-center space-x-4">
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
+                  placeholder="搜索省份或城市..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="输入省份名称"
+                  className="pl-8"
                 />
-                <Button onClick={handleSearch}>搜索</Button>
               </div>
             </div>
+            <button onClick={ dataSets } className="btn">
+              datasets
+            </button>
           </div>
         </Header>
-        <Main className="py-6">
-          <div className="grid gap-4 lg:grid-cols-4">
-            <Card className="lg:col-span-3">
-              <div className="aspect-[16/9] relative">
-                <div
-                  ref={chartRef}
-                  className="w-full h-full"
-                />
-                {currentView !== 'china' && (
-                  <Button
-                    onClick={handleBack}
-                    className="absolute top-4 left-4"
-                  >
-                    返回全国
-                  </Button>
-                )}
-              </div>
-              <div className="p-4 flex flex-wrap gap-2">
-                <div className="flex items-center mr-4">
-                  <span className="inline-block w-4 h-4 bg-[#00e400] mr-1"></span>
-                  <span className="text-sm">优 (0-50)</span>
+
+        <Main className="flex-1 space-y-4 p-8 pt-6">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+            <div className="flex-1 space-y-4">
+              <Card>
+                <div className="relative aspect-[2/1]">
+                  <div ref={chartRef} className="absolute inset-0" />
+                  {currentView !== 'china' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBack}
+                      className="absolute left-4 top-4 z-10"
+                    >
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      返回全国
+                    </Button>
+                  )}
                 </div>
-                <div className="flex items-center mr-4">
-                  <span className="inline-block w-4 h-4 bg-[#ffff00] mr-1"></span>
-                  <span className="text-sm">良 (51-100)</span>
-                </div>
-                <div className="flex items-center mr-4">
-                  <span className="inline-block w-4 h-4 bg-[#ff7e00] mr-1"></span>
-                  <span className="text-sm">轻度污染 (101-150)</span>
-                </div>
-                <div className="flex items-center mr-4">
-                  <span className="inline-block w-4 h-4 bg-[#ff0000] mr-1"></span>
-                  <span className="text-sm">中度污染 (151-200)</span>
-                </div>
-                <div className="flex items-center mr-4">
-                  <span className="inline-block w-4 h-4 bg-[#99004c] mr-1"></span>
-                  <span className="text-sm">重度污染 (201-300)</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="inline-block w-4 h-4 bg-[#7e0023] mr-1"></span>
-                  <span className="text-sm">严重污染 ({'>'}300)</span>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <CardHeader className="px-0 pt-0">
-                    <CardTitle className="text-lg font-semibold">空气质量详情</CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-0">
-                    <div className="space-y-3">
-                      <div className="relative w-full h-32 bg-white rounded-lg flex items-center justify-center mb-4">
-                        <div className="absolute left-4 top-4">
-                          <span className="text-sm text-muted-foreground">北京市</span>
-                        </div>
-                        <div className="absolute right-4 top-4">
-                          <span className="text-xs text-muted-foreground">04月23日13:00 更新</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <div className="relative w-24 h-24">
-                            <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                fill="none"
-                                stroke="#e5e7eb"
-                                strokeWidth="10"
-                              />
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                fill="none"
-                                stroke="#3b82f6"
-                                strokeWidth="10"
-                                strokeDasharray="282.7"
-                                strokeDashoffset={282.7 - (282.7 * 59) / 500}
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="text-3xl font-bold">59</span>
-                              <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-                                良
-                              </Badge>
-                            </div>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">空气质量等级说明</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                    {[
+                      { color: '#00e400', label: '优', range: '0-50' },
+                      { color: '#ffff00', label: '良', range: '51-100' },
+                      { color: '#ff7e00', label: '轻度污染', range: '101-150' },
+                      { color: '#ff0000', label: '中度污染', range: '151-200' },
+                      { color: '#99004c', label: '重度污染', range: '201-300' },
+                      { color: '#7e0023', label: '严重污染', range: '>300' },
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-medium">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {item.range}
                           </div>
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        {[
-                          { label: 'PM2.5', value: 18, max: 100, unit: 'μg/m³' },
-                          { label: 'PM10', value: 67, max: 100, unit: 'μg/m³' },
-                          { label: 'SO₂', value: 4, max: 100, unit: 'μg/m³' },
-                          { label: 'NO₂', value: 7, max: 100, unit: 'μg/m³' }
-                        ].map((item, index) => (
-                          <div key={index} className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <span className="text-sm text-muted-foreground cursor-help">{item.label}</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="text-sm">{getIndicatorDescription(item.label)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              <span className="text-sm font-medium">{item.value} {item.unit}</span>
-                            </div>
-                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-blue-500 rounded-full"
-                                style={{ width: `${(item.value / item.max) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="w-full lg:w-[400px]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>空气质量详情</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold">59</div>
+                        <div className="text-xs text-muted-foreground">
+                          空气质量指数 (AQI)
+                        </div>
                       </div>
-                      <div className="mt-4 flex items-start gap-2 bg-yellow-50 p-3 rounded-lg">
-                        <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5" />
-                        <p className="text-sm text-yellow-700">推荐少数敏感人群减少户外活动</p>
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+                        良
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      更新时间：{format(new Date(), 'yyyy-MM-dd HH:mm')}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    {[
+                      { label: 'PM2.5', value: 18, max: 100, unit: 'μg/m³' },
+                      { label: 'PM10', value: 67, max: 100, unit: 'μg/m³' },
+                      { label: 'SO₂', value: 4, max: 100, unit: 'μg/m³' },
+                      { label: 'NO₂', value: 7, max: 100, unit: 'μg/m³' },
+                      { label: 'O₃', value: 35, max: 100, unit: 'μg/m³' },
+                      { label: 'CO', value: 0.8, max: 100, unit: 'mg/m³' },
+                    ].map((item, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm font-medium">
+                                    {item.label}
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-sm">
+                                  {getIndicatorDescription(item.label)}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <span className="text-sm">
+                            {item.value} {item.unit}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-secondary">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{
+                              width: `${(item.value / item.max) * 100}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="rounded-lg bg-yellow-50 p-4">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
+                      <div className="text-sm text-yellow-800">
+                        建议：敏感人群应减少户外活动，佩戴防护口罩
                       </div>
                     </div>
-                  </CardContent>
-                </div>
-              </div>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </Main>
       </div>

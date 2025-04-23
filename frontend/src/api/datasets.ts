@@ -31,19 +31,30 @@ export interface DatasetCreate {
 
 export const datasetsApi = {
   // 获取数据集列表
-  getAll: (params?: { skip?: number; limit?: number }) =>
-    http.get<DatasetList>('/api/datasets', { params }),
-  
+  getAll: () => http.get<DatasetList>('/api/datasets'),
+
   // 获取单个数据集
   getById: (id: number) =>
     http.get<Dataset>(`/api/datasets/${id}`),
-  
+
   // 上传新数据集
-  upload: async (file: File, dataType: string) => {
+  upload: async (datasets: any[], province: string) => {
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('data_type', dataType)
+    formData.append('name', province)
+    formData.append('data_json', JSON.stringify(datasets))
     
+    return http.post('/api/datasets/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+
+  uploaddict: async (datasets: Record<string, any>) => {
+    const formData = new FormData()
+    formData.append('name', 'china')
+    formData.append('data_json', JSON.stringify(datasets))
+
     return http.post('/api/datasets/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
