@@ -2,7 +2,7 @@ import {
   IconLayoutDashboard,
   IconDatabase,
   IconChartBar,
-  IconChartPie,
+  // IconChartPie,
   IconMap,
   IconSettings,
 } from '@tabler/icons-react'
@@ -72,48 +72,49 @@ export const sidebarData: SidebarData = {
           // ]
         },
         {
-          title: '分析工具',
+          title: '分析与可视化',
           icon: IconChartBar,
+
           items: [
             {
-              title: '查询构建器',
-              url: '/apps/analytics/builder',
+              title: '数据分析',
+              url: '/apps/visualizations',
             },
             {
               title: '分析记录',
               url: '/apps/analytics/history',
             },
-            {
-              title: '分析详情',
-              url: '/apps/analytics/$id', // Changed from :id to $id
-              hidden: true,
-            }
+          //   {
+          //     title: '分析详情',
+          //     url: '/apps/analytics/$id', // Changed from :id to $id
+          //     hidden: true,
+          //   }
           ]
         },
-        {
-          title: '数据可视化',
-          icon: IconChartPie,
-          items: [
-            {
-              title: '可视化列表',
-              url: '/apps/visualizations',
-            },
-            {
-              title: '创建可视化',
-              url: '/apps/visualizations/create',
-            },
-            {
-              title: '可视化详情',
-              url: '/apps/visualizations/$id/view', // Changed from :id to $id
-              hidden: true,
-            },
-            {
-              title: '编辑可视化',
-              url: '/apps/visualizations/$id/edit', // Changed from :id to $id
-              hidden: true,
-            }
-          ]
-        },
+        // {
+        //   title: '数据可视化',
+        //   icon: IconChartPie,
+        //   items: [
+        //     {
+        //       title: '可视化列表',
+        //       url: '/apps/visualizations',
+        //     },
+        //     {
+        //       title: '创建可视化',
+        //       url: '/apps/visualizations/create',
+        //     },
+        //     {
+        //       title: '可视化详情',
+        //       url: '/apps/visualizations/$id/view', // Changed from :id to $id
+        //       hidden: true,
+        //     },
+        //     {
+        //       title: '编辑可视化',
+        //       url: '/apps/visualizations/$id/edit', // Changed from :id to $id
+        //       hidden: true,
+        //     }
+        //   ]
+        // },
       ],
     },
     {

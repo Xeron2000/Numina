@@ -1,181 +1,190 @@
-import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { Plus, Grid, List, SortAsc, Filter } from 'lucide-react'
-import { useState } from 'react'
-import { visualizationsApi } from '@/api/visualizations'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+// import { useNavigate } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useState } from 'react'
+import { datasetsApi, Dataset } from '@/api/datasets' 
+import { useToast } from '@/hooks/use-toast'
+import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel
-} from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
-import { VisualizationCard } from './components/visualization-card'
-import { EmptyState } from './components/empty-state'
-import type { Visualization } from '@/api/visualizations'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Search } from 'lucide-react'
+import { format } from 'date-fns'
 
-type ViewMode = 'grid' | 'list'
-type SortField = 'name' | 'created_at' | 'type'
+interface DatasetResponse {
+  items: Dataset[]
+  total: number
+}
 
 export default function Visualizations() {
-  const navigate = useNavigate()
-  const [search] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [sortField, setSortField] = useState<SortField>('created_at')
-  const [typeFilter, setTypeFilter] = useState<Visualization['type'] | 'all'>('all')
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['visualizations'],
-    queryFn: () => visualizationsApi.getAll()
-  })
-
-  const filteredData = data?.data.items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.description.toLowerCase().includes(search.toLowerCase())
-    const matchesType = typeFilter === 'all' || item.type === typeFilter
-    return matchesSearch && matchesType
-  }).sort((a, b) => {
-    if (sortField === 'created_at') {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  // const navigate = useNavigate()
+  const { toast } = useToast()
+  const [searchText, setSearchText] = useState('')
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  // , isLoading
+  const { data } = useQuery({
+    queryKey: ['datasets'],
+    queryFn: async () => {
+      try {
+        const data = await datasetsApi.getAll()
+        const response = data as unknown as DatasetResponse
+        if (!response) {
+          throw new Error('No data received from server')
+        }
+        
+        const sortedItems = [...response.items].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        
+        return {
+          items: sortedItems,
+          total: response.total
+        } as DatasetResponse
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: '错误',
+          description: '获取数据集失败'
+        })
+        throw error
+      }
     }
-    return a[sortField].localeCompare(b[sortField])
   })
+
+  const filteredDatasets = data?.items.filter(dataset => 
+    dataset.name.toLowerCase().includes(searchText.toLowerCase())
+  ) || []
+
+  const handleDatasetSelect = (dataset: Dataset) => {
+    setSelectedDataset(dataset)
+    setIsDialogOpen(false)
+  }
+
+  const handleClear = () => {
+    setSelectedDataset(null)
+  }
+
+  const handleAnalyze = () => {
+    if (selectedDataset) {
+      console.log('分析数据集:', selectedDataset.id)
+      // TODO: 实现分析逻辑
+    }
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
+  }
 
   return (
     <>
       <Header>
         <div className="flex items-center justify-between py-8 mt-4">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight">数据可视化</h2>
+            <h2 className="text-2xl font-bold tracking-tight">数据分析与可视化</h2>
             <p className="text-sm text-muted-foreground">
-              创建和管理您的数据可视化图表，深入分析数据洞察
+              分析数据，生成可视化图
             </p>
-          </div>
-          <Button onClick={() => navigate({ to: '/apps/visualizations/create' })} size="lg" className="px-2 mt-4 ml-8 mr-4">
-            <Plus />
-            创建可视化
-          </Button>
-        </div>
-
-        <div className="mt-8 flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                筛选
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>可视化类型</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setTypeFilter('all')}>
-                全部类型
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setTypeFilter('line')}>折线图</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter('bar')}>柱状图</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter('pie')}>饼图</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter('scatter')}>散点图</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTypeFilter('map')}>地图</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <SortAsc className="mr-2 h-4 w-4" />
-                排序
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setSortField('created_at')}>
-                创建时间
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortField('name')}>
-                名称
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortField('type')}>
-                类型
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <div className="flex items-center gap-1 border rounded-md">
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </Header>
 
-      <Main>
-        {isLoading ? (
-          <div className={viewMode === 'grid' ? 
-            "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" : 
-            "space-y-4"
-          }>
-            {Array(6).fill(0).map((_, i) => (
-              <Card key={i} className="p-4">
-                <Skeleton className="h-[200px]" />
-                <Skeleton className="mt-4 h-4 w-[200px]" />
-                <Skeleton className="mt-2 h-4 w-[160px]" />
-              </Card>
-            ))}
-          </div>
-        ) : !filteredData?.length ? (
-          <EmptyState
-            title="暂无可视化"
-            description="开始创建您的第一个数据可视化图表"
-            action={
-              <Button onClick={() => navigate({ to: '/apps/visualizations/create' })}>
-                <Plus className="mr-2 h-4 w-4" />
-                创建可视化
-              </Button>
-            }
-          />
-        ) : (
-          <div className={viewMode === 'grid' ? 
-            "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" : 
-            "space-y-4"
-          }>
-            {filteredData?.map((item) => (
-              <Card key={item.id} className="group relative overflow-hidden transition-all hover:shadow-lg">
-                <div className="absolute right-2 top-2 z-10">
-                  <Badge variant={
-                    item.type === 'line' ? 'default' :
-                    item.type === 'bar' ? 'secondary' :
-                    item.type === 'pie' ? 'destructive' :
-                    item.type === 'scatter' ? 'outline' : 'default'
-                  }>
-                    {item.type}
-                  </Badge>
+      <main className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex justify-end mb-4">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>添加数据集</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>选择数据集</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索数据集..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="flex-1"
+                  />
                 </div>
-                <VisualizationCard 
-                  visualization={item} 
-                  viewMode={viewMode}
-                />
-              </Card>
-            ))}
+                <div className="h-[400px] overflow-y-auto">
+                  {filteredDatasets.map((dataset) => (
+                    <div
+                      key={dataset.id}
+                      className="p-4 rounded-lg border cursor-pointer hover:bg-muted"
+                      onClick={() => handleDatasetSelect(dataset)}
+                    >
+                      <div className="font-medium">{dataset.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {dataset.description || '暂无描述'}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        创建于 {format(new Date(dataset.created_at), 'yyyy-MM-dd HH:mm')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="rounded-lg border p-4">
+          <div className="space-y-4">
+            {selectedDataset ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">名称</th>
+                      <th className="text-left p-2">描述</th>
+                      <th className="text-left p-2">文件类型</th>
+                      <th className="text-left p-2">文件大小</th>
+                      <th className="text-left p-2">行数</th>
+                      <th className="text-left p-2">状态</th>
+                      <th className="text-left p-2">创建时间</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="p-2">{selectedDataset.name}</td>
+                      <td className="p-2">{selectedDataset.description || '暂无描述'}</td>
+                      <td className="p-2">{selectedDataset.file_type}</td>
+                      <td className="p-2">{formatFileSize(selectedDataset.file_size)}</td>
+                      <td className="p-2">{selectedDataset.row_count}</td>
+                      <td className="p-2">{selectedDataset.status}</td>
+                      <td className="p-2">{format(new Date(selectedDataset.created_at), 'yyyy-MM-dd HH:mm')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                暂无待分析数据集
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={handleClear} disabled={!selectedDataset}>
+                清空
+              </Button>
+              <Button onClick={handleAnalyze} disabled={!selectedDataset}>
+                分析
+              </Button>
+            </div>
           </div>
-        )}
-      </Main>
+        </div>
+      </main>
     </>
   )
 }
