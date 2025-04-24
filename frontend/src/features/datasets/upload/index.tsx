@@ -34,7 +34,13 @@ export default function DatasetUpload() {
 
     setUploading(true)
     try {
-      await datasetsApi.upload(file, dataType)
+      // Create array from file
+      const fileData = [file]
+      
+      // TODO: Add province selection to the form
+      const province = "default" // This should come from a form field
+      
+      await datasetsApi.upload(fileData, province)
       toast({
         title: '上传成功',
         description: '数据集已成功上传',

@@ -1,11 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
-import { datasetsApi } from '@/api/datasets'
+import { datasetsApi, Dataset } from '@/api/datasets'  // Import Dataset type from API
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { DatasetList } from './components/dataset-list'
 import { EmptyState } from './components/empty-state'
 import { useToast } from '@/hooks/use-toast'
+
+interface DatasetResponse {
+  items: Dataset[]  // Use the Dataset type from API
+  total: number
+}
 
 export default function Datasets() {
   const { toast } = useToast()
@@ -19,7 +24,7 @@ export default function Datasets() {
         if (!response) {
           throw new Error('No data received from server')
         }
-        return response
+        return response as unknown as DatasetResponse  // 使用类型断言
       } catch (error) {
         toast({
           variant: 'destructive',
