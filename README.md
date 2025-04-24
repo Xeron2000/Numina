@@ -106,24 +106,18 @@ frontend/
 
 ### 方式一：Docker Compose 部署（推荐）
 
-1. 配置环境变量
+1. 构建和启动服务
+第一次使用
 ```bash
-cp .env.prod.example .env.prod
+docker compose -f docker-compose.prod.yml up -d --build
 ```
-
-编辑 `.env.prod` 文件，设置必要的环境变量：
-```plaintext
-API_URL=http://localhost:8000
-JWT_SECRET=your-secure-secret-key
-```
-
-2. 构建和启动服务
+之后使用
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-3. 访问应用
-- 前端：http://localhost:80
+2. 访问应用
+- 前端：http://localhost:4137
 - 后端API：http://localhost:8000
 - API文档：http://localhost:8000/docs
 
@@ -139,21 +133,14 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-2. 配置环境变量
-```bash
-set SQLALCHEMY_DATABASE_URI=sqlite:///./sql_app.db
-set JWT_SECRET=your-secure-secret-key
-set ENVIRONMENT=production
-```
-
-3. 初始化数据库
+2. 初始化数据库
 ```bash
 python scripts/init_db.py
 ```
 
-4. 启动服务
+3. 启动服务
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 #### 前端部署
@@ -165,46 +152,12 @@ pnpm install
 pnpm build
 ```
 
-2. 使用 Nginx 部署
-
-安装 Nginx，将构建后的文件复制到 Nginx 目录：
+4. 启动 Nginx
 ```bash
-copy dist\* C:\nginx\html\
-```
-
-配置 Nginx：
-```nginx
-server {
-    listen 80;
-    server_name localhost;
-
-    location / {
-        root /usr/share/nginx/html;
-        index index.html;
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api {
-        proxy_pass http://localhost:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-3. 启动 Nginx
-```bash
-nginx
+pnpm preview
 ```
 
 ## 维护说明
-
-### 日志
-- 后端日志位于 `backend/logs/` 目录
-- Docker 日志可通过 `docker compose -f docker-compose.prod.yml logs` 查看
 
 ### 数据备份
 建议定期备份 SQLite 数据库文件：
@@ -216,7 +169,7 @@ copy backend\sql_app.db backup\sql_app.db.backup
 1. 拉取最新代码
 2. 重新构建并启动服务
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
         
