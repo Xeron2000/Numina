@@ -32,7 +32,7 @@ export default function Dashboard() {
   }
 
   // 处理数据分类统计
-  const processAirQualityData = (data: any[]) => {
+  const processAirQualityData = (data: any) => {
     // 初始化所有分类
     const categories = {
       '优': { count: 0, color: '#00e400' },
@@ -43,24 +43,32 @@ export default function Dashboard() {
       '严重污染': { count: 0, color: '#7e0023' }
     }
     
-    // 确保data是数组且不为空
-    if (Array.isArray(data) && data.length > 0) {
-      data.forEach(item => {
-        if (typeof item.value === 'number' && !isNaN(item.value)) {
-          const category = categorizeAirQuality(item.value)
-          if (categories[category]) {
-            categories[category].count++
-          }
+    // 处理数据对象
+    if (typeof data === 'object' && data !== null) {
+      Object.values(data).forEach(provinceData => {
+        if (Array.isArray(provinceData)) {
+          provinceData.forEach(cityObj => {
+            Object.values(cityObj).forEach(city => {
+              if (city && typeof (city as any).AQI === 'string') {
+                const aqi = parseFloat((city as { AQI: string }).AQI);
+                if (!isNaN(aqi)) {
+                  const category = categorizeAirQuality(aqi);
+                  if (categories[category]) {
+                    categories[category].count++;
+                  }
+                }
+              }
+            });
+          });
         }
-      })
+      });
     }
 
-    // 转换为数组并保持顺序
     return Object.entries(categories).map(([name, { count, color }]) => ({
       name,
       count,
       color
-    }))
+    }));
   }
 
   useEffect(() => {
@@ -70,9 +78,8 @@ export default function Dashboard() {
         setStats((response.data as unknown) as DashboardStats)
         
         // 从 sessionStorage 获取城市空气质量数据
-        const provinceData = JSON.parse(sessionStorage.getItem('provinceData') || '[]')
-        console.log(`成功获取 ${provinceData.length} 个城市的空气质量数据`)
-        const categorizedData = processAirQualityData(provinceData)
+        const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}')
+        const categorizedData = processAirQualityData(cityData)
         setCityAirQuality(categorizedData)
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error)
@@ -102,11 +109,29 @@ export default function Dashboard() {
     {
       title: '整体空气质量',
       value: cityAirQuality ? 
-        Math.round(
-          JSON.parse(sessionStorage.getItem('provinceData') || '[]')
-            .reduce((acc: number, cur: any) => acc + cur.value, 0) / 
-          JSON.parse(sessionStorage.getItem('provinceData') || '[]').length
-        ) : '-',
+        (() => {
+          const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+          let totalAQI = 0;
+          let cityCount = 0;
+          
+          Object.values(cityData).forEach((provinceData: any) => {
+            if (Array.isArray(provinceData)) {
+              provinceData.forEach(cityObj => {
+                Object.values(cityObj).forEach(city => {
+                  if (city && typeof (city as any).AQI === 'string') {
+                    const aqi = parseFloat((city as { AQI: string }).AQI);
+                    if (!isNaN(aqi)) {
+                      totalAQI += aqi;
+                      cityCount++;
+                    }
+                  }
+                });
+              });
+            }
+          });
+          
+          return cityCount > 0 ? Math.round(totalAQI / cityCount) : '-';
+        })() : '-',
       description: '全国城市平均AQI指数',
       icon: IconWind,
       link: '/apps/geospatial/map'
