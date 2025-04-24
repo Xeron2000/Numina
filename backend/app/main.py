@@ -16,8 +16,11 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:5173",
         "http://localhost:4173",
-        "http://172.18.0.3:4173"
+        "http://localhost:3000",
+        "http://172.18.0.3:4173",  # Docker 容器中的前端地址
+        "*",  # 开发环境临时使用，生产环境请删除
     ],
     allow_credentials=True,
     allow_methods=["*"],

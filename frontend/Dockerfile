@@ -5,8 +5,6 @@ WORKDIR /app
 # Add build arguments
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
-# 降低 Node.js 内存限制到 2GB
-ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./

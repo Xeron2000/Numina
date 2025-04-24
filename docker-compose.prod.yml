@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
   frontend:
+    container_name: airsight-frontend
+    image: airsight-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -20,6 +22,8 @@ services:
       - app-network
 
   backend:
+    container_name: airsight-backend
+    image: airsight-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
