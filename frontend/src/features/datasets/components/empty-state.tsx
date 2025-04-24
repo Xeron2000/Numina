@@ -16,7 +16,7 @@ export function EmptyState() {
           开始上传您的第一个数据集。您可以上传 CSV 或 Excel 文件。
         </p>
         <div className="flex gap-2">
-          <Button onClick={() => navigate({ to: '/apps/datasets/upload' })}>
+          <Button onClick={() => navigate({ to: '/apps/geospatial/map' })}>
             上传数据集
           </Button>
         </div>
