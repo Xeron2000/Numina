@@ -7,12 +7,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=${API_URL}
-    environment:
-      - API_URL=${API_URL}
-      - VITE_API_URL=${API_URL}
-      - NODE_OPTIONS=--max-old-space-size=2048
     ports:
       - "4173:4173"
     depends_on:
@@ -29,11 +23,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      - SQLALCHEMY_DATABASE_URI=sqlite:////app/data/sql_app.db
-      - JWT_SECRET=${JWT_SECRET}
-      - ENVIRONMENT=production
-      - CORS_ORIGINS=http://localhost:4173,http://127.0.0.1:4173
     volumes:
       - sqlite_data:/app/data
     restart: unless-stopped
