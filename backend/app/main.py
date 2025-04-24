@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.api.v1 import api_router
 
 app = FastAPI(
-    title="ClearAir Insight API",
+    title="AirSight API",
     description="空气污染数据分析平台API",
     version="1.0.0",
     docs_url="/docs",   # Swagger UI endpoint

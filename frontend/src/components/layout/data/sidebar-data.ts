@@ -17,7 +17,7 @@ export const sidebarData: SidebarData = {
   },
   logo: {
     icon: Command,
-    name: 'ClearAir Insight'
+    name: 'AirSight'
   },
   navGroups: [
     {
