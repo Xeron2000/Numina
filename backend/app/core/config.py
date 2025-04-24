@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     
     # CORS设置
     # 修改 CORS 设置，确保包含前端地址
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000", "http://localhost:5173"]
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "https://app.airsight.top", "http://localhost:5173","http://loaclhost:4137"]
 
     # SQLite数据库URL
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///./sql_app.db"

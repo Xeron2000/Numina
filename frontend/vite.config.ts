@@ -7,7 +7,14 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 export default defineConfig({
   plugins: [react(), TanStackRouterVite()],
   server: {
-    allowedHosts: ['.replit.dev']
+    allowedHosts: [
+      '.airsight.top',
+      'localhost',
+      '127.0.0.1'
+      // 你可以添加更多主机名，例如：
+      // 'your-domain.com',
+      // '*.your-domain.com'  // 使用通配符允许所有子域名
+    ]
   },
   resolve: {
     alias: {

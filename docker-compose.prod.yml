@@ -9,9 +9,10 @@ services:
         - VITE_API_URL=${API_URL}
     environment:
       - API_URL=${API_URL}
-      - NGINX_API_URL=${API_URL}  # Add this line to make it available for nginx
+      - VITE_API_URL=${API_URL}
+      - NODE_OPTIONS=--max-old-space-size=2048
     ports:
-      - "80:80"
+      - "4173:4173"
     depends_on:
       - backend
     restart: unless-stopped
@@ -25,16 +26,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SQLALCHEMY_DATABASE_URI=sqlite:///./sql_app.db
+      - SQLALCHEMY_DATABASE_URI=sqlite:////app/data/sql_app.db
       - JWT_SECRET=${JWT_SECRET}
       - ENVIRONMENT=production
+      - CORS_ORIGINS=http://localhost:4173,http://127.0.0.1:4173
     volumes:
       - sqlite_data:/app/data
     restart: unless-stopped
     networks:
       - app-network
-
-  # 移除 db 服务，因为使用 SQLite
 
 networks:
   app-network:
