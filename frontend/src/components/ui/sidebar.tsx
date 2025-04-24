@@ -285,7 +285,6 @@ const SidebarTrigger = React.forwardRef<
       size='icon'
       className={cn('h-7 w-7', className)}
       onClick={(event) => {
-        console.log('SidebarTrigger onClick')
         toggleSidebar()
         
         // 等待侧边栏动画完成后（200ms）再调整图表大小

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import * as echarts from 'echarts';
 import { format } from 'date-fns';
-import { Search, ArrowLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ArrowLeft, ChevronRight, Loader2, RefreshCw, Save } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -86,18 +86,16 @@ export default function GeospatialMap() {
   const [chartInstance, setChartInstance] = useState<echarts.EChartsType | null>(null);
 
   const citySiteData = async (cityName: string, currentProvince: string) => {
-    setIsLoading(true);
     try {
       const dataSite = await getCitySiteData(cityName);
       console.log('站点数据:', dataSite); // 使用数据
-      console.log(currentProvince)
       const code = getCode(cityName, currentProvince);
       if (code) {
         const response = await getCityHistoryData(String(code));
-        console.log(response);
+        console.log("history", response);
       }
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching city site data:', error);
     }
   }
 
@@ -117,7 +115,6 @@ export default function GeospatialMap() {
     console.log('allCityData')
     const response = await getCityData();
     const data = response as unknown as CityResponseData;  // 先转为 unknown 再转为目标类型
-    console.log("cityData", response)
     sessionStorage.setItem('cityData', JSON.stringify(data.cityData));
     sessionStorage.setItem('provinceData', JSON.stringify(data.provinceData));
   }
@@ -221,7 +218,7 @@ export default function GeospatialMap() {
     const option = {
       title: {
         text: mapName === 'china' ? '中国空气质量指数' : `${mapName}空气质量指数`,
-        subtext: '点击省份查看详情',
+        subtext: mapName === 'china' ? '点击省份查看详情' : '点击城市查看详情',
         left: 'center'
       },
       tooltip: {
@@ -394,11 +391,20 @@ export default function GeospatialMap() {
     } else {
       const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
       const datas = raw[currentView] || [];  // 确保是数组
-      console.log(currentView);
-      const response = upload(datas, currentView);
-      console.log(response)
+      upload(datas, currentView);
     }
   }
+
+  // 添加刷新函数
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      await allCityData(); // 重新获取数据
+      loadMap(currentView); // 重新加载当前视图
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <MapContext.Provider value={{ chart: chartInstance, setChart: setChartInstance }}>
@@ -437,9 +443,6 @@ export default function GeospatialMap() {
                   )}
                 </div>
               </div>
-              <button onClick={dataSets} className="btn">
-                datasets
-              </button>
             </div>
           </Header>
 
@@ -449,7 +452,7 @@ export default function GeospatialMap() {
                 <Card>
                   <div className="relative aspect-[2/1]">
                     {isLoading ? (
-                      <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                      <div className="absolute inset-0 z-50 flex items-center justify-center bg-white backdrop-blur-sm">
                         <div className="flex flex-col items-center space-y-4">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                           <p className="text-sm text-muted-foreground">
@@ -459,6 +462,24 @@ export default function GeospatialMap() {
                       </div>
                     ) : null}
                     <div ref={chartRef} className="absolute inset-0" />
+                    {currentView !== 'china' && (
+                      <div className="absolute right-10 top-4 z-10 flex gap-2">
+                        <button onClick={dataSets} className="btn">
+                          datasets
+                        </button>
+                      </div>
+                    )}
+                    <div className="absolute right-4 top-4 z-10 flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        <span className="sr-only">刷新数据</span>
+                      </Button>
+                    </div>
                     {currentView !== 'china' && (
                       <Button
                         variant="outline"
@@ -507,25 +528,40 @@ export default function GeospatialMap() {
 
               <div className="w-full lg:w-[400px]">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>空气质量详情</CardTitle>
+                  <CardHeader className='flex-row items-center'>
+                    <CardTitle className='text-2xl'>空气质量详情</CardTitle>
+                    {currentData.TimePoint && <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleBack}
+                            className="ml-auto h-8 w-8"
+                            disabled={isLoading}
+                          >
+                            <Save className="h-4 w-4" />
+                            <span className="sr-only">获取{currentData.Area}历史数据</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>获取{currentData.Area}历史数据</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>}
                   </CardHeader>
                   <CardContent className="space-y-8">
-                    {Object.keys(currentData).length === 0 ? (
-                      <div className="flex items-center justify-center py-8 text-muted-foreground">
-                        <p>点击地图区域查看详细数据</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-2xl font-bold">{currentData.AQI}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {currentData.Area}空气质量指数 (AQI)
-                              </div>
+
+                    <>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-2xl font-bold">{currentData.AQI}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {currentData.Area}空气质量指数 (AQI)
                             </div>
-                            <Badge variant="secondary" className={`
+                          </div>
+                          <Badge variant="secondary" className={`
                             ${currentData.Quality === '优' ? 'bg-green-100 text-green-700' : ''}
                             ${currentData.Quality === '良' ? 'bg-yellow-100 text-yellow-700' : ''}
                             ${currentData.Quality === '轻度污染' ? 'bg-orange-100 text-orange-700' : ''}
@@ -533,70 +569,70 @@ export default function GeospatialMap() {
                             ${currentData.Quality === '重度污染' ? 'bg-purple-100 text-purple-700' : ''}
                             ${currentData.Quality === '严重污染' ? 'bg-rose-100 text-rose-700' : ''}
                           `}>
-                              {currentData.Quality}
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            更新时间：{currentData.TimePoint ? format(new Date(currentData.TimePoint), 'yyyy-MM-dd HH:mm') : '-'}
-                          </div>
+                            {currentData.Quality}
+                          </Badge>
                         </div>
+                        <div className="text-xs text-muted-foreground">
+                          更新时间：{currentData.TimePoint ? format(new Date(currentData.TimePoint), 'yyyy-MM-dd HH:mm') : '-'}
+                        </div>
+                      </div>
 
-                        <Separator />
+                      <Separator />
 
-                        <div className="space-y-4">
-                          {[
-                            { label: 'PM2.5', value: currentData.PM2_5, max: 500, unit: 'μg/m³' },
-                            { label: 'PM10', value: currentData.PM10, max: 600, unit: 'μg/m³' },
-                            { label: 'SO₂', value: currentData.SO2, max: 800, unit: 'μg/m³' },
-                            { label: 'NO₂', value: currentData.NO2, max: 200, unit: 'μg/m³' },
-                            { label: 'O₃', value: currentData.O3, max: 300, unit: 'μg/m³' },
-                            { label: 'CO', value: currentData.CO, max: 15, unit: 'mg/m³' },
-                          ].map((item, index) => (
-                            <div key={index} className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="flex items-center space-x-2">
-                                        <span className="text-sm font-medium">
-                                          {item.label}
-                                        </span>
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-sm">
-                                        {getIndicatorDescription(item.label)}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                <span className="text-sm">
-                                  {item.value} {item.unit}
-                                </span>
-                              </div>
-                              <div className="h-2 rounded-full bg-secondary">
-                                <div
-                                  className="h-full rounded-full bg-primary transition-all"
-                                  style={{
-                                    width: `${(Number(item.value) / item.max) * 100}%`,
-                                  }}
-                                />
-                              </div>
+                      <div className="space-y-4">
+                        {[
+                          { label: 'PM2.5', value: currentData.PM2_5, max: 500, unit: 'μg/m³' },
+                          { label: 'PM10', value: currentData.PM10, max: 600, unit: 'μg/m³' },
+                          { label: 'SO₂', value: currentData.SO2, max: 800, unit: 'μg/m³' },
+                          { label: 'NO₂', value: currentData.NO2, max: 200, unit: 'μg/m³' },
+                          { label: 'O₃', value: currentData.O3, max: 300, unit: 'μg/m³' },
+                          { label: 'CO', value: currentData.CO, max: 15, unit: 'mg/m³' },
+                        ].map((item, index) => (
+                          <div key={index} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm font-medium">
+                                        {item.label}
+                                      </span>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-sm">
+                                      {getIndicatorDescription(item.label)}
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <span className="text-sm">
+                                {item.value} {item.unit}
+                              </span>
                             </div>
-                          ))}
-                        </div>
-
-                        <div className="rounded-lg bg-yellow-50 p-4">
-                          <div className="flex items-start space-x-2">
-                            <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
-                            <div className="text-sm text-yellow-800">
-                              <div>建议：{currentData.Measure}</div>
-                              <div className="mt-1">{currentData.Unheathful}</div>
+                            <div className="h-2 rounded-full bg-secondary">
+                              <div
+                                className="h-full rounded-full bg-primary transition-all"
+                                style={{
+                                  width: `${(Number(item.value) / item.max) * 100}%`,
+                                }}
+                              />
                             </div>
                           </div>
+                        ))}
+                      </div>
+
+                      <div className="rounded-lg bg-yellow-50 p-4">
+                        <div className="flex items-start space-x-2">
+                          <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
+                          <div className="text-sm text-yellow-800">
+                            <div>建议：{currentData.Measure}</div>
+                            <div className="mt-1">{currentData.Unheathful}</div>
+                          </div>
                         </div>
-                      </>
-                    )}
+                      </div>
+                    </>
+
                   </CardContent>
                 </Card>
               </div>

@@ -43,9 +43,9 @@ CITY_CODES = [
 ]
 
 # Configuration parameters
-REQUEST_TIMEOUT = 10
-DELAY_RANGE = (0.2, 1)
-MAX_WORKERS = 10
+REQUEST_TIMEOUT = 15
+DELAY_RANGE = (0.1, 0.3)
+MAX_WORKERS = 15
 
 # Add request retry decorator
 def retry(max_retries=2, delay=1):
