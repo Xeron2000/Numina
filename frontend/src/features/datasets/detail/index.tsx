@@ -68,16 +68,40 @@ export default function DatasetDetail() {
     
     if (dataset.name === 'china') {
       const provinceData = (dataset.data as DatasetData)[selectedProvince]
-      return selectedProvince && provinceData ? provinceData : []
+      return selectedProvince && provinceData ? provinceData.map(item => {
+        const cityName = Object.keys(item)[0]
+        const cityData = item[cityName]
+        return {
+          [cityName]: {
+            ...cityData,
+            TimePoint: cityData.TimePoint
+          }
+        }
+      }) : []
     } else if ('hour' in dataset.data) {
       const data = dataset.data as { hour: any[], day: any[] }
       const timeData = data[selectedTimeRange as keyof typeof data] || []
       return timeData.map(item => {
-        // 根据不同的时间范围处理不同的字段名
+        // 转换时间为北京时间
+        const timestamp = parseInt(item.TimePoint.replace('/Date(', '').replace(')/', ''))
+        const date = new Date(timestamp)
+        // 转换为北京时间（UTC+8）
+        date.setHours(date.getHours() + 8)
+        const formattedTime = date.toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\//g, '-')
+
         if (selectedTimeRange === 'day') {
           return {
             [item.TimePoint]: {
-              TimePoint: item.TimePoint,
+              Area: item.Area,
+              TimePoint: formattedTime,
               AQI: item.AQI,
               Quality: item.Quality,
               PrimaryPollutant: item.PrimaryPollutant,
@@ -92,7 +116,8 @@ export default function DatasetDetail() {
         } else {
           return {
             [item.TimePoint]: {
-              TimePoint: item.TimePoint,
+              Area: item.Area,
+              TimePoint: formattedTime,
               AQI: item.AQI,
               Quality: item.Quality,
               PrimaryPollutant: item.PrimaryPollutant,
@@ -107,7 +132,16 @@ export default function DatasetDetail() {
         }
       })
     } else {
-      return dataset.data as CityData[]
+      return (dataset.data as CityData[]).map(item => {
+        const cityName = Object.keys(item)[0]
+        const cityData = item[cityName]
+        return {
+          [cityName]: {
+            ...cityData,
+            TimePoint: cityData.TimePoint
+          }
+        }
+      })
     }
   }, [dataset, selectedProvince, selectedTimeRange])
 
@@ -337,9 +371,15 @@ export default function DatasetDetail() {
                       <TableHeader>
                         <TableRow>
                           {'hour' in dataset.data ? (
-                            <TableHead>时间</TableHead>
+                            <>
+                              <TableHead>地区</TableHead>
+                              <TableHead>时间</TableHead>
+                            </>
                           ) : (
-                            <TableHead>城市</TableHead>
+                            <>
+                              <TableHead>城市</TableHead>
+                              <TableHead>时间</TableHead>
+                            </>
                           )}
                           <TableHead>AQI</TableHead>
                           <TableHead>空气质量</TableHead>
@@ -357,7 +397,8 @@ export default function DatasetDetail() {
                           const data = {
                             cityName: Object.keys(item)[0],
                             ...Object.values(item)[0] as {
-                              TimePoint: string;  // 添加TimePoint字段
+                              TimePoint: string;
+                              Area: string;
                               AQI: string;
                               Quality: string;
                               PrimaryPollutant: string;
@@ -371,9 +412,19 @@ export default function DatasetDetail() {
                           }
                           return (
                             <TableRow key={index}>
-                              <TableCell className="font-medium">
-                                {'hour' in dataset.data ? new Date(data.TimePoint).toLocaleString() : data.cityName}
-                              </TableCell>
+                              {'hour' in dataset.data ? (
+                                <>
+                                  <TableCell>{data.Area}</TableCell>
+                                  <TableCell className="font-medium">
+                                    {data.TimePoint}
+                                  </TableCell>
+                                </>
+                              ) : (
+                                <>
+                                  <TableCell className="font-medium">{data.cityName}</TableCell>
+                                  <TableCell>{data.TimePoint}</TableCell>
+                                </>
+                              )}
                               <TableCell>
                                 <Badge variant={
                                   Number(data.AQI) <= 50 ? 'outline' :

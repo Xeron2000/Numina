@@ -34,6 +34,24 @@ export const sidebarData: SidebarData = {
       title: '数据分析',
       items: [
         {
+          // title: '空间分析',
+          icon: IconMap,
+          // items: [
+          //   {
+          title: '地图分析',
+          url: '/apps/geospatial/map',
+          // },
+          // {
+          //   title: '热力分布',
+          //   url: '/apps/geospatial/heatmap',
+          // },
+          // {
+          //   title: '地理围栏',
+          //   url: '/apps/geospatial/fences',
+          // }
+          // ]
+        },
+        {
           title: '数据集',
           url: '/apps/datasets',
           icon: IconDatabase,
@@ -95,24 +113,6 @@ export const sidebarData: SidebarData = {
               hidden: true,
             }
           ]
-        },
-        {
-          // title: '空间分析',
-          icon: IconMap,
-          // items: [
-          //   {
-          title: '地图分析',
-          url: '/apps/geospatial/map',
-          // },
-          // {
-          //   title: '热力分布',
-          //   url: '/apps/geospatial/heatmap',
-          // },
-          // {
-          //   title: '地理围栏',
-          //   url: '/apps/geospatial/fences',
-          // }
-          // ]
         },
       ],
     },
