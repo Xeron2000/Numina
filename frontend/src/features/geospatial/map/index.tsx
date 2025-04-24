@@ -116,7 +116,7 @@ export default function GeospatialMap() {
   const allCityData = async () => {
     console.log('allCityData')
     const response = await getCityData();
-    const data = response as unknown as CityResponseData;  // 先转为 unknown 再转为目标类型
+    const data = response as unknown as CityResponseData;
     sessionStorage.setItem('cityData', JSON.stringify(data.cityData));
     sessionStorage.setItem('provinceData', JSON.stringify(data.provinceData));
   }
