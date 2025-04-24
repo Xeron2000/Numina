@@ -24,9 +24,9 @@ export const sidebarData: SidebarData = {
       title: '概览',
       items: [
         {
+          icon: IconLayoutDashboard,
           title: '仪表盘',
           url: '/',
-          icon: IconLayoutDashboard,
         },
       ],
     },
@@ -42,10 +42,10 @@ export const sidebarData: SidebarData = {
               title: '数据集列表',
               url: '/apps/datasets',
             },
-            {
-              title: '上传数据集',
-              url: '/apps/datasets/upload',
-            },
+            // {
+            //   title: '上传数据集',
+            //   url: '/apps/datasets/upload',
+            // },
             {
               title: '数据集详情',
               url: '/apps/datasets/$id',
@@ -97,22 +97,22 @@ export const sidebarData: SidebarData = {
           ]
         },
         {
-          title: '空间分析',
+          // title: '空间分析',
           icon: IconMap,
-          items: [
-            {
-              title: '地图分析',
-              url: '/apps/geospatial/map',
-            },
-            {
-              title: '热力分布',
-              url: '/apps/geospatial/heatmap',
-            },
-            {
-              title: '地理围栏',
-              url: '/apps/geospatial/fences',
-            }
-          ]
+          // items: [
+          //   {
+          title: '地图分析',
+          url: '/apps/geospatial/map',
+          // },
+          // {
+          //   title: '热力分布',
+          //   url: '/apps/geospatial/heatmap',
+          // },
+          // {
+          //   title: '地理围栏',
+          //   url: '/apps/geospatial/fences',
+          // }
+          // ]
         },
       ],
     },

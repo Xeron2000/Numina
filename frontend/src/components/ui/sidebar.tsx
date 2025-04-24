@@ -268,11 +268,14 @@ const Sidebar = React.forwardRef<
 )
 Sidebar.displayName = 'Sidebar'
 
+import { useMapContext } from '../../features/geospatial/map/context/MapContext';
+
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
+  const { chart } = useMapContext();
 
   return (
     <Button
@@ -282,8 +285,17 @@ const SidebarTrigger = React.forwardRef<
       size='icon'
       className={cn('h-7 w-7', className)}
       onClick={(event) => {
-        onClick?.(event)
+        console.log('SidebarTrigger onClick')
         toggleSidebar()
+        
+        // 等待侧边栏动画完成后（200ms）再调整图表大小
+        setTimeout(() => {
+          if (chart) {
+            chart.resize();
+          }
+        }, 300);  // 设置稍微比过渡动画时间长一点，确保动画完成
+
+        onClick?.(event)
       }}
       {...props}
     >
@@ -623,7 +635,7 @@ const SidebarMenuAction = React.forwardRef<
         'peer-data-[size=lg]/menu-button:top-2.5',
         'group-data-[collapsible=icon]:hidden',
         showOnHover &&
-          'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
+        'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
         className
       )}
       {...props}

@@ -13,6 +13,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import chinaMapData from '@/features/geospatial/map/data/province.json';
 import { geospatialApi } from '@/api/geospatial';
 import { datasetsApi } from '@/api/datasets';
+import { MapContext } from './context/MapContext';
 
 const { getCitySiteData, getCityData, getCityHistoryData } = geospatialApi;
 const { upload, uploaddict } = datasetsApi;
@@ -82,6 +83,8 @@ export default function GeospatialMap() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentData, setCurrentData] = useState<CityDetailData>(exampleData);
 
+  const [chartInstance, setChartInstance] = useState<echarts.EChartsType | null>(null);
+
   const citySiteData = async (cityName: string, currentProvince: string) => {
     setIsLoading(true);
     try {
@@ -98,26 +101,26 @@ export default function GeospatialMap() {
     }
   }
 
-    const getCode = (name: string, provinceName: string) => {
-      const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
-      const datas = raw[provinceName] || [];  // 确保是数组
-      for (let i = 0; i < datas.length; i++) {
-        const city = datas[i];
-        if (name in city) {
-          return city[name]["CityCode"]
-        }
+  const getCode = (name: string, provinceName: string) => {
+    const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+    const datas = raw[provinceName] || [];  // 确保是数组
+    for (let i = 0; i < datas.length; i++) {
+      const city = datas[i];
+      if (name in city) {
+        return city[name]["CityCode"]
       }
-      return ""; // 如果没有找到，返回空字符串或其他默认值 
+    }
+    return ""; // 如果没有找到，返回空字符串或其他默认值 
   }
 
   const allCityData = async () => {
     console.log('allCityData')
     const response = await getCityData();
     const data = response as unknown as CityResponseData;  // 先转为 unknown 再转为目标类型
-    console.log("cityData",response)
+    console.log("cityData", response)
     sessionStorage.setItem('cityData', JSON.stringify(data.cityData));
     sessionStorage.setItem('provinceData', JSON.stringify(data.provinceData));
-}
+  }
   const getIndicatorDescription = (indicator: string) => {
     const descriptions: Record<string, string> = {
       'PM2.5': '细颗粒物，直径小于等于2.5微米的颗粒物',
@@ -153,6 +156,7 @@ export default function GeospatialMap() {
 
     return () => {
       window.removeEventListener('resize', resizeHandler);
+      setChartInstance(null); // 清理
       myChart.dispose();
     };
   }, []);
@@ -262,6 +266,7 @@ export default function GeospatialMap() {
     };
 
     chart.current.setOption(option);
+    setChartInstance(chart.current);
     chart.current.off('click'); // 移除之前的点击事件处理函数
     // 在 renderMap 函数中修改点击事件处理
     const allData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
@@ -315,7 +320,7 @@ export default function GeospatialMap() {
 
   useEffect(() => {
 
-  }, [currentView, airQualityData, currentData])
+  }, [currentView, airQualityData, currentData, chartInstance])
 
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -396,130 +401,131 @@ export default function GeospatialMap() {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="flex min-h-screen flex-col">
-        <Header className="border-b">
-          <div className="flex h-16 items-center px-4">
-            <div className="flex flex-1 items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <h2 className="text-lg font-semibold">地理空间分析</h2>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{currentView === 'china' ? '全国' : currentView}</span>
+    <MapContext.Provider value={{ chart: chartInstance, setChart: setChartInstance }}>
+      <ErrorBoundary>
+        <div className="flex min-h-screen flex-col">
+          <Header className="border-b">
+            <div className="flex h-16 items-center px-4">
+              <div className="flex flex-1 items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <h2 className="text-lg font-semibold">地理空间分析</h2>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{currentView === 'china' ? '全国' : currentView}</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜索城市..."
-                  value={searchText}
-                  onChange={handleInputChange}
-                  className="pl-8"
-                />
-                {showDropdown && searchResults.length > 0 && (
-                  <div className="absolute w-full mt-1 max-h-60 overflow-auto bg-white border rounded-md shadow-lg z-50">
-                    {searchResults.map((city, index) => (
-                      <div
-                        key={index}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleSearch(city)}
-                      >
-                        {city}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <button onClick={dataSets} className="btn">
-              datasets
-            </button>
-          </div>
-        </Header>
-
-        <Main className="flex-1 space-y-4 p-8 pt-6">
-          <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
-            <div className="flex-1 space-y-4">
-              <Card>
-                <div className="relative aspect-[2/1]">
-                  {isLoading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                      <div className="flex flex-col items-center space-y-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="text-sm text-muted-foreground">
-                          正在加载地图数据...
-                        </p>
-                      </div>
+              <div className="flex items-center space-x-4">
+                <div className="relative w-64">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="搜索城市..."
+                    value={searchText}
+                    onChange={handleInputChange}
+                    className="pl-8"
+                  />
+                  {showDropdown && searchResults.length > 0 && (
+                    <div className="absolute w-full mt-1 max-h-60 overflow-auto bg-white border rounded-md shadow-lg z-50">
+                      {searchResults.map((city, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleSearch(city)}
+                        >
+                          {city}
+                        </div>
+                      ))}
                     </div>
-                  ) : null}
-                  <div ref={chartRef} className="absolute inset-0" />
-                  {currentView !== 'china' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBack}
-                      className="absolute left-4 top-4 z-10"
-                      disabled={isLoading}
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      返回全国
-                    </Button>
                   )}
                 </div>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">空气质量等级说明</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                    {[
-                      { color: '#00e400', label: '优', range: '0-50' },
-                      { color: '#ffff00', label: '良', range: '51-100' },
-                      { color: '#ff7e00', label: '轻度污染', range: '101-150' },
-                      { color: '#ff0000', label: '中度污染', range: '151-200' },
-                      { color: '#99004c', label: '重度污染', range: '201-300' },
-                      { color: '#7e0023', label: '严重污染', range: '>300' },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <div
-                          className="h-3 w-3 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <div className="space-y-0.5">
-                          <div className="text-xs font-medium">{item.label}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {item.range}
-                          </div>
+              </div>
+              <button onClick={dataSets} className="btn">
+                datasets
+              </button>
+            </div>
+          </Header>
+
+          <Main className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0">
+              <div className="flex-1 space-y-4">
+                <Card>
+                  <div className="relative aspect-[2/1]">
+                    {isLoading ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                        <div className="flex flex-col items-center space-y-4">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-sm text-muted-foreground">
+                            正在加载地图数据...
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    ) : null}
+                    <div ref={chartRef} className="absolute inset-0" />
+                    {currentView !== 'china' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBack}
+                        className="absolute left-4 top-4 z-10"
+                        disabled={isLoading}
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        返回全国
+                      </Button>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="w-full lg:w-[400px]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>空气质量详情</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                  {Object.keys(currentData).length === 0 ? (
-                    <div className="flex items-center justify-center py-8 text-muted-foreground">
-                      <p>点击地图区域查看详细数据</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-2xl font-bold">{currentData.AQI}</div>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">空气质量等级说明</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                      {[
+                        { color: '#00e400', label: '优', range: '0-50' },
+                        { color: '#ffff00', label: '良', range: '51-100' },
+                        { color: '#ff7e00', label: '轻度污染', range: '101-150' },
+                        { color: '#ff0000', label: '中度污染', range: '151-200' },
+                        { color: '#99004c', label: '重度污染', range: '201-300' },
+                        { color: '#7e0023', label: '严重污染', range: '>300' },
+                      ].map((item, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <div className="space-y-0.5">
+                            <div className="text-xs font-medium">{item.label}</div>
                             <div className="text-xs text-muted-foreground">
-                              {currentData.Area}空气质量指数 (AQI)
+                              {item.range}
                             </div>
                           </div>
-                          <Badge variant="secondary" className={`
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="w-full lg:w-[400px]">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>空气质量详情</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    {Object.keys(currentData).length === 0 ? (
+                      <div className="flex items-center justify-center py-8 text-muted-foreground">
+                        <p>点击地图区域查看详细数据</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-2xl font-bold">{currentData.AQI}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {currentData.Area}空气质量指数 (AQI)
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className={`
                             ${currentData.Quality === '优' ? 'bg-green-100 text-green-700' : ''}
                             ${currentData.Quality === '良' ? 'bg-yellow-100 text-yellow-700' : ''}
                             ${currentData.Quality === '轻度污染' ? 'bg-orange-100 text-orange-700' : ''}
@@ -527,76 +533,77 @@ export default function GeospatialMap() {
                             ${currentData.Quality === '重度污染' ? 'bg-purple-100 text-purple-700' : ''}
                             ${currentData.Quality === '严重污染' ? 'bg-rose-100 text-rose-700' : ''}
                           `}>
-                            {currentData.Quality}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          更新时间：{currentData.TimePoint ? format(new Date(currentData.TimePoint), 'yyyy-MM-dd HH:mm') : '-'}
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      <div className="space-y-4">
-                        {[
-                          { label: 'PM2.5', value: currentData.PM2_5, max: 500, unit: 'μg/m³' },
-                          { label: 'PM10', value: currentData.PM10, max: 600, unit: 'μg/m³' },
-                          { label: 'SO₂', value: currentData.SO2, max: 800, unit: 'μg/m³' },
-                          { label: 'NO₂', value: currentData.NO2, max: 200, unit: 'μg/m³' },
-                          { label: 'O₃', value: currentData.O3, max: 300, unit: 'μg/m³' },
-                          { label: 'CO', value: currentData.CO, max: 15, unit: 'mg/m³' },
-                        ].map((item, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="flex items-center space-x-2">
-                                      <span className="text-sm font-medium">
-                                        {item.label}
-                                      </span>
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="text-sm">
-                                      {getIndicatorDescription(item.label)}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                              <span className="text-sm">
-                                {item.value} {item.unit}
-                              </span>
-                            </div>
-                            <div className="h-2 rounded-full bg-secondary">
-                              <div
-                                className="h-full rounded-full bg-primary transition-all"
-                                style={{
-                                  width: `${(Number(item.value) / item.max) * 100}%`,
-                                }}
-                              />
-                            </div>
+                              {currentData.Quality}
+                            </Badge>
                           </div>
-                        ))}
-                      </div>
-
-                      <div className="rounded-lg bg-yellow-50 p-4">
-                        <div className="flex items-start space-x-2">
-                          <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
-                          <div className="text-sm text-yellow-800">
-                            <div>建议：{currentData.Measure}</div>
-                            <div className="mt-1">{currentData.Unheathful}</div>
+                          <div className="text-xs text-muted-foreground">
+                            更新时间：{currentData.TimePoint ? format(new Date(currentData.TimePoint), 'yyyy-MM-dd HH:mm') : '-'}
                           </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+
+                        <Separator />
+
+                        <div className="space-y-4">
+                          {[
+                            { label: 'PM2.5', value: currentData.PM2_5, max: 500, unit: 'μg/m³' },
+                            { label: 'PM10', value: currentData.PM10, max: 600, unit: 'μg/m³' },
+                            { label: 'SO₂', value: currentData.SO2, max: 800, unit: 'μg/m³' },
+                            { label: 'NO₂', value: currentData.NO2, max: 200, unit: 'μg/m³' },
+                            { label: 'O₃', value: currentData.O3, max: 300, unit: 'μg/m³' },
+                            { label: 'CO', value: currentData.CO, max: 15, unit: 'mg/m³' },
+                          ].map((item, index) => (
+                            <div key={index} className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium">
+                                          {item.label}
+                                        </span>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-sm">
+                                        {getIndicatorDescription(item.label)}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <span className="text-sm">
+                                  {item.value} {item.unit}
+                                </span>
+                              </div>
+                              <div className="h-2 rounded-full bg-secondary">
+                                <div
+                                  className="h-full rounded-full bg-primary transition-all"
+                                  style={{
+                                    width: `${(Number(item.value) / item.max) * 100}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="rounded-lg bg-yellow-50 p-4">
+                          <div className="flex items-start space-x-2">
+                            <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
+                            <div className="text-sm text-yellow-800">
+                              <div>建议：{currentData.Measure}</div>
+                              <div className="mt-1">{currentData.Unheathful}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </Main>
-      </div>
-    </ErrorBoundary>
+          </Main>
+        </div>
+      </ErrorBoundary>
+    </MapContext.Provider>
   );
 }
