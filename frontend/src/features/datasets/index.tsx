@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { datasetsApi, Dataset } from '@/api/datasets'  // Import Dataset type from API
 import { Header } from '@/components/layout/header'
@@ -15,6 +15,7 @@ interface DatasetResponse {
 
 export default function Datasets() {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 5
 
@@ -56,6 +57,32 @@ export default function Datasets() {
     setCurrentPage(page)
   }
 
+  const handleDelete = async (id: number) => {
+    try {
+      await datasetsApi.delete(id)
+      
+      // 从缓存中移除已删除的数据集
+      queryClient.setQueryData(['datasets'], (oldData: DatasetResponse | undefined) => {
+        if (!oldData) return oldData
+        return {
+          items: oldData.items.filter(item => item.id !== id),
+          total: oldData.total - 1
+        }
+      })
+
+      toast({
+        title: '成功',
+        description: '数据集已成功删除',
+      })
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '错误',
+        description: '删除数据集失败'
+      })
+    }
+  }
+
   return (
     <>
       <Header>
@@ -84,6 +111,7 @@ export default function Datasets() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
+            onDelete={handleDelete}
           />
         )}
       </Main>

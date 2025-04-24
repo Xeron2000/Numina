@@ -17,12 +17,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Button } from '@/components/ui/button'
 
 interface DatasetListProps {
   datasets: Dataset[]
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  onDelete: (id: number) => void
 }
 
 // 文件大小格式化函数
@@ -36,7 +38,7 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${units[i]}`
 }
 
-export function DatasetList({ datasets, currentPage, totalPages, onPageChange }: DatasetListProps) {
+export function DatasetList({ datasets, currentPage, totalPages, onPageChange, onDelete }: DatasetListProps) {
   const navigate = useNavigate()
 
   const handleRowClick = (id: number) => {
@@ -69,6 +71,7 @@ export function DatasetList({ datasets, currentPage, totalPages, onPageChange }:
             <TableHead>行数</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>创建时间</TableHead>
+            <TableHead>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -76,20 +79,22 @@ export function DatasetList({ datasets, currentPage, totalPages, onPageChange }:
             <TableRow
               key={dataset.id}
               className="cursor-pointer"
-              onClick={() => handleRowClick(dataset.id)}
             >
-              <TableCell className="font-medium">{dataset.name}</TableCell>
-              <TableCell>{dataset.description || '暂无描述'}</TableCell>
-              <TableCell>{dataset.file_type.toUpperCase()}</TableCell>
-              <TableCell>{formatFileSize(dataset.file_size)}</TableCell>
-              <TableCell>{dataset.row_count}</TableCell>
-              <TableCell>
+              <TableCell 
+                className="font-medium"
+                onClick={() => handleRowClick(dataset.id)}
+              >{dataset.name}</TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.description || '暂无描述'}</TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.file_type.toUpperCase()}</TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>{formatFileSize(dataset.file_size)}</TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.row_count}</TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>
                 <Badge variant={getStatusBadgeVariant(dataset.status)}>
                   {dataset.status === 'ready' ? '就绪' : 
                    dataset.status === 'processing' ? '处理中' : '错误'}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell onClick={() => handleRowClick(dataset.id)}>
                 {new Date(dataset.created_at).toLocaleString('zh-CN', {
                   year: 'numeric',
                   month: '2-digit',
@@ -97,6 +102,20 @@ export function DatasetList({ datasets, currentPage, totalPages, onPageChange }:
                   hour: '2-digit',
                   minute: '2-digit'
                 })}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('确定要删除这个数据集吗？')) {
+                      onDelete(dataset.id)
+                    }
+                  }}
+                >
+                  删除
+                </Button>
               </TableCell>
             </TableRow>
           ))}

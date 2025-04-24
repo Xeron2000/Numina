@@ -420,14 +420,14 @@ export default function GeospatialMap() {
       await uploadcode(cityname, String(citycode));
       toast({
         description: `${cityname}历史数据保存成功，请前往数据集列表查看`,
-        className: "fixed top-4 left-1/2 w-fit bg-white",
+        className: "fixed top-4 left-1/2 w-fit",
         duration: 2000, // 2秒后自动消失
       })
     } catch (error) {
       toast({
         variant: "destructive",
         description: "数据保存失败，请重试",
-        className: "fixed top-4 left-1/2 w-fit bg-red",
+        className: "fixed top-4 left-1/2 w-fit",
         duration: 2000,
       })
     }
@@ -458,7 +458,7 @@ export default function GeospatialMap() {
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <div className="relative w-64">
+                <div className="relative w-64 ml-8">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="搜索城市..."

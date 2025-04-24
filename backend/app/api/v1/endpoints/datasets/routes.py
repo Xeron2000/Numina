@@ -232,7 +232,15 @@ async def delete_dataset(
     if dataset.owner_id != current_user.id:
         raise PermissionDeniedException()
     
-    # 删除数据集
+    # 删除物理文件
+    try:
+        if os.path.exists(dataset.file_path):
+            os.remove(dataset.file_path)
+    except Exception as e:
+        # 记录错误但继续删除数据库记录
+        print(f"Error deleting file: {str(e)}")
+    
+    # 删除数据集记录
     db.delete(dataset)
     db.commit()
     

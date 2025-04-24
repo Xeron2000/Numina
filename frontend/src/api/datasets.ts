@@ -73,4 +73,6 @@ export const datasetsApi = {
       },
     })
   },
+  
+  delete: (id: number) => http.delete(`/api/datasets/${id}`),
 }
