@@ -84,7 +84,7 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
         isActive={checkIsActive(href, item)}
         tooltip={item.title}
       >
-        <Link to={item.url} onClick={() => setOpenMobile(false)}>
+        <Link to={item.url as any} onClick={() => setOpenMobile(false)}>
           {item.icon && <item.icon />}
           <span>{item.title}</span>
           {'badge' in item && <NavBadge>{item.badge}</NavBadge>}
@@ -125,7 +125,18 @@ const SidebarMenuCollapsible = ({
                   asChild
                   isActive={checkIsActive(href, subItem)}
                 >
-                  <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                  <Link 
+                    to={subItem.url?.includes('$id') 
+                      ? { 
+                          to: subItem.url as any,
+                          params: { 
+                            id: sessionStorage.getItem('datasetId') || '0'
+                          }
+                        }
+                      : subItem.url as any
+                    } 
+                    onClick={() => setOpenMobile(false)}
+                  >
                     {subItem.icon && <subItem.icon />}
                     <span>{subItem.title}</span>
                     {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
@@ -169,7 +180,15 @@ const SidebarMenuCollapsedDropdown = ({
           {item.items.map((sub) => (
             <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
               <Link
-                to={sub.url}
+                to={sub.url?.includes('$id') 
+                  ? { 
+                      to: sub.url as any,
+                      params: { 
+                        id: sessionStorage.getItem('datasetId') || '0'
+                      }
+                    }
+                  : sub.url as any
+                }
                 className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
               >
                 {sub.icon && <sub.icon />}

@@ -48,11 +48,17 @@ export function CommandMenu() {
                       key={`${navItem.url}-${i}`}
                       value={navItem.title}
                       onSelect={() => {
-                        runCommand(() => navigate({ to: navItem.url }))
+                        // if (navItem.url?.includes('$id') || navItem.url?.includes('$datasetId') || navItem.url?.includes('undefined')) {
+                        //   const storedId = sessionStorage.getItem('datasetId') || '0'
+                        //   const url = `/apps/datasets/${storedId}`
+                        //   runCommand(() => navigate({ to: url as any }))
+                        // } else {
+                          runCommand(() => navigate({ to: navItem.url as any }))
+                        // }
                       }}
                     >
-                      <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                        <IconArrowRightDashed className='size-2 text-muted-foreground/80' />
+                      <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                        <IconArrowRightDashed className="size-2 text-muted-foreground/80" />
                       </div>
                       {navItem.title}
                     </CommandItem>
@@ -63,11 +69,17 @@ export function CommandMenu() {
                     key={`${subItem.url}-${i}`}
                     value={subItem.title}
                     onSelect={() => {
-                      runCommand(() => navigate({ to: subItem.url }))
+                      if (subItem.url?.includes('$id')) {
+                        const storedId = sessionStorage.getItem('datasetId') || '0'
+                        const url = subItem.url.replace('$id', storedId)
+                        runCommand(() => navigate({ to: url as any }))
+                      } else {
+                        runCommand(() => navigate({ to: subItem.url as any }))
+                      }
                     }}
                   >
-                    <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                      <IconArrowRightDashed className='size-2 text-muted-foreground/80' />
+                    <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                      <IconArrowRightDashed className="size-2 text-muted-foreground/80" />
                     </div>
                     {subItem.title}
                   </CommandItem>

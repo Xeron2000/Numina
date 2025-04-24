@@ -31,7 +31,7 @@ async def get_datasets(
         dataset.pop('_sa_instance_state', None)
     return {"items": datasets, "total": total}
 
-@router.get("/{id}", response_model=DatasetResponse)
+@router.get("/{id}")
 async def get_dataset(
     id: int,
     db: Session = Depends(get_db),
@@ -46,7 +46,22 @@ async def get_dataset(
     if dataset.owner_id != current_user.id:
         raise PermissionDeniedException()
     
-    return dataset
+    # Convert SQLAlchemy model to dict and remove SQLAlchemy instance state
+    dataset_dict = dataset.__dict__
+    dataset_dict.pop('_sa_instance_state', None)
+    
+    # 读取关联的 JSON 文件
+    try:
+        with open(dataset.file_path, 'r', encoding='utf-8') as f:
+            file_content = json.load(f)
+        dataset_dict['data'] = file_content
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Dataset file not found")
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Invalid JSON file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return dataset_dict
 #  response_model=DatasetResponse
 @router.post("/upload")
 async def upload_dataset(

@@ -47,6 +47,11 @@ export default function Datasets() {
             </p>
           </div>
         </div>
+        <button onClick={()=>{
+          datasetsApi.getById(3).then(res=>{
+            console.log('res', res)
+          })
+        }}>get</button>
       </Header>
 
       <Main>

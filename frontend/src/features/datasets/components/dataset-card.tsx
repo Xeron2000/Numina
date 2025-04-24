@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+// import { Link } from '@tanstack/react-router'
 import { FileSpreadsheet, MoreVertical } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -30,9 +30,9 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <Link to={`/apps/datasets/${dataset.id}/edit`}>编辑</Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem className="text-destructive">删除</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -52,9 +52,9 @@ export function DatasetCard({ dataset }: DatasetCardProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full" asChild>
+        {/* <Button className="w-full" asChild>
           <Link to={`/apps/datasets/${dataset.id}/view`}>查看详情</Link>
-        </Button>
+        </Button> */}
       </CardFooter>
     </Card>
   )

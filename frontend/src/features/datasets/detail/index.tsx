@@ -1,7 +1,7 @@
 import { useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, FileSpreadsheet, Calendar, Database, FileType } from 'lucide-react'
-import { datasetsApi } from '@/api/datasets'
+import { datasetsApi, Dataset } from '@/api/datasets'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,13 +10,74 @@ import { Main } from '@/components/layout/main'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useState, useMemo } from 'react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+interface CityData {
+  [cityName: string]: {
+    AQI: string;
+    Quality: string;
+    PrimaryPollutant: string;
+    PM2_5: string;
+    PM10: string;
+    SO2: string;
+    NO2: string;
+    O3: string;
+    CO: string;
+    Measure?: string;
+  }
+}
+
+interface DatasetData {
+  [province: string]: CityData[];
+}
 
 export default function DatasetDetail() {
-  const { id } = useParams({ from: '/_authenticated/apps/datasets/$id' })
-  const { data: dataset, isLoading } = useQuery({
+  const [selectedProvince, setSelectedProvince] = useState<string>('')
+  const [page, setPage] = useState(1)
+  const itemsPerPage = 5
+
+  let { id } = useParams({ from: '/_authenticated/apps/datasets/$id' })
+  if (!Number.isFinite(Number(id))) {
+      id = sessionStorage.getItem('datasetId') || '0'
+  }
+  const { data: data, isLoading } = useQuery({
     queryKey: ['datasets', id],
     queryFn: () => datasetsApi.getById(Number(id))
   })
+  const dataset = data as Dataset | undefined
+
+  const currentData = useMemo(() => {
+    if (!dataset) return []
+    
+    if (dataset.name === 'china') {
+      const provinceData = (dataset.data as DatasetData)[selectedProvince]
+      return selectedProvince && provinceData ? provinceData : []
+    } else {
+      return dataset.data as CityData[]
+    }
+  }, [dataset, selectedProvince])
+
+  const totalItems = currentData.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const currentItems = currentData.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  )
+
+  // 当选择新的省份时重置页码
+  const handleProvinceChange = (value: string) => {
+    setSelectedProvince(value)
+    setPage(1)
+  }
 
   if (isLoading) {
     return (
@@ -63,11 +124,11 @@ export default function DatasetDetail() {
             </Button>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{dataset.data.name}</h2>
-                <Badge variant="outline">{dataset.data.file_type}</Badge>
+                <h2 className="text-lg font-semibold">{dataset.name}</h2>
+                <Badge variant="outline">{dataset.file_type}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {dataset.data.description || '暂无描述'}
+                {dataset.description || '暂无描述'}
               </p>
             </div>
           </div>
@@ -90,7 +151,7 @@ export default function DatasetDetail() {
                   <FileType className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dataset.data.file_type}</div>
+                  <div className="text-2xl font-bold">{dataset.file_type}</div>
                 </CardContent>
               </Card>
 
@@ -100,7 +161,7 @@ export default function DatasetDetail() {
                   <Database className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{dataset.data.row_count}</div>
+                  <div className="text-2xl font-bold">{dataset.row_count}</div>
                 </CardContent>
               </Card>
 
@@ -111,7 +172,7 @@ export default function DatasetDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {formatFileSize(dataset.data.file_size)}
+                    {formatFileSize(dataset.file_size)}
                   </div>
                 </CardContent>
               </Card>
@@ -123,7 +184,62 @@ export default function DatasetDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {new Date(dataset.data.created_at).toLocaleDateString()}
+                    {new Date(dataset.created_at).toLocaleDateString()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 添加数据集详细信息卡片 */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>数据集信息</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">数据集名称</span>
+                      <span className="text-sm text-muted-foreground">{dataset.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">描述</span>
+                      <span className="text-sm text-muted-foreground">{dataset.description || '暂无描述'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">状态</span>
+                      <Badge variant={dataset.status === 'ready' ? 'default' : dataset.status === 'error' ? 'destructive' : 'secondary'}>
+                        {dataset.status === 'ready' ? '就绪' : dataset.status === 'processing' ? '处理中' : '错误'}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>数据统计</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">数据总量</span>
+                      <span className="text-sm text-muted-foreground">{dataset.row_count} 条</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">存储大小</span>
+                      <span className="text-sm text-muted-foreground">{formatFileSize(dataset.file_size)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">文件格式</span>
+                      <Badge variant="outline">{dataset.file_type}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">创建日期</span>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(dataset.created_at).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -132,14 +248,99 @@ export default function DatasetDetail() {
 
           <TabsContent value="preview">
             <Card>
-              <CardHeader>
-                <CardTitle>数据预览</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className='text-2xl'>数据预览</CardTitle>
+                {dataset.name === 'china' && (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedProvince}
+                      onValueChange={handleProvinceChange}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="选择省份" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(dataset.data).map(province => (
+                          <SelectItem key={province} value={province}>
+                            {province}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
-                {/* TODO: 添加数据预览组件 */}
                 <div className="rounded-md border">
                   <div className="overflow-x-auto">
-                    {/* 这里添加数据表格组件 */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>城市</TableHead>
+                          <TableHead>AQI</TableHead>
+                          <TableHead>空气质量</TableHead>
+                          <TableHead>主要污染物</TableHead>
+                          <TableHead>PM2.5</TableHead>
+                          <TableHead>PM10</TableHead>
+                          <TableHead>SO2</TableHead>
+                          <TableHead>NO2</TableHead>
+                          <TableHead>O3</TableHead>
+                          <TableHead>CO</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {currentItems.map((cityData: any, index: number) => {
+                          const cityName = Object.keys(cityData)[0];
+                          const data = cityData[cityName];
+                          return (
+                            <TableRow key={`${cityName}-${index}`}>
+                              <TableCell className="font-medium">{cityName}</TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  Number(data.AQI) <= 50 ? 'outline' :
+                                  Number(data.AQI) <= 100 ? 'secondary' :
+                                  'destructive'
+                                }>{data.AQI}</Badge>
+                              </TableCell>
+                              <TableCell>{data.Quality}</TableCell>
+                              <TableCell>{data.PrimaryPollutant || '无'}</TableCell>
+                              <TableCell>{data.PM2_5}</TableCell>
+                              <TableCell>{data.PM10}</TableCell>
+                              <TableCell>{data.SO2}</TableCell>
+                              <TableCell>{data.NO2}</TableCell>
+                              <TableCell>{data.O3}</TableCell>
+                              <TableCell>{data.CO}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div className="flex items-center justify-between p-4">
+                    <div className="text-sm text-muted-foreground">
+                      共 {totalItems} 条数据
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page === 1}
+                      >
+                        上一页
+                      </Button>
+                      <div className="text-sm">
+                        第 {page} 页，共 {totalPages} 页
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page === totalPages}
+                      >
+                        下一页
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -152,9 +353,65 @@ export default function DatasetDetail() {
                 <CardTitle>数据结构</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* TODO: 添加数据结构展示组件 */}
                 <div className="space-y-4">
-                  {/* 这里添加字段列表组件 */}
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>字段名</TableHead>
+                          <TableHead>类型</TableHead>
+                          <TableHead>描述</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">id</TableCell>
+                          <TableCell>数字</TableCell>
+                          <TableCell>数据集唯一标识符</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">name</TableCell>
+                          <TableCell>字符串</TableCell>
+                          <TableCell>数据集名称</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">description</TableCell>
+                          <TableCell>字符串 | null</TableCell>
+                          <TableCell>数据集描述</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">file_type</TableCell>
+                          <TableCell>字符串</TableCell>
+                          <TableCell>文件类型</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">file_size</TableCell>
+                          <TableCell>数字</TableCell>
+                          <TableCell>文件大小（字节）</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">row_count</TableCell>
+                          <TableCell>数字</TableCell>
+                          <TableCell>数据行数</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">created_at</TableCell>
+                          <TableCell>字符串</TableCell>
+                          <TableCell>创建时间</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">status</TableCell>
+                          <TableCell>字符串</TableCell>
+                          <TableCell>数据集状态（ready | processing | error）</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">data</TableCell>
+                          <TableCell>任意类型</TableCell>
+                          <TableCell>数据集内容</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

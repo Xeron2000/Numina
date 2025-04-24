@@ -29,6 +29,7 @@ export function DatasetList({ datasets }: DatasetListProps) {
   const navigate = useNavigate()
 
   const handleRowClick = (id: number) => {
+    sessionStorage.setItem('datasetId', String(id))
     navigate({ to: '/apps/datasets/$id', params: { id: String(id) } })
   }
 

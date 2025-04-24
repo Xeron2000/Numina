@@ -8,8 +8,8 @@ export interface Dataset {
   file_size: number
   row_count: number
   created_at: string
-  updated_at: string
   status: 'ready' | 'processing' | 'error'
+  data: Record<string, any> | any[]
 }
 
 export interface Response<T> {
