@@ -119,15 +119,10 @@ JWT_SECRET=your-secure-secret-key
 
 2. 构建和启动服务
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-3. 初始化数据库（首次部署时）
-```bash
-docker compose -f docker-compose.prod.yml exec backend python scripts/init_db.py
-```
-
-4. 访问应用
+3. 访问应用
 - 前端：http://localhost:80
 - 后端API：http://localhost:8000
 - API文档：http://localhost:8000/docs
@@ -221,7 +216,7 @@ copy backend\sql_app.db backup\sql_app.db.backup
 1. 拉取最新代码
 2. 重新构建并启动服务
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
         
