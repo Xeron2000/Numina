@@ -37,22 +37,6 @@ interface CityData {
   }
 }
 
-// interface historyData {
-//   [time: string] : {
-//     AQI: string;
-//     Quality: string;
-//     TimePoint: string;
-//     PrimaryPollutant: string;
-//     PM2_5: string;
-//     PM10: string;
-//     SO2: string;
-//     NO2: string;
-//     O3: string;
-//     CO: string;
-//     Measure?: string;
-//   }[]
-// }
-
 interface DatasetData {
   [province: string]: CityData[];
 }
@@ -63,9 +47,15 @@ export default function DatasetDetail() {
   const [page, setPage] = useState(1)
   const itemsPerPage = 5
 
+  // 修改时间范围选择的处理函数
+  const handleTimeRangeChange = (value: string) => {
+    setSelectedTimeRange(value)
+    setPage(1)  // 重置页码
+  }
+
   let { id } = useParams({ from: '/_authenticated/apps/datasets/$id' })
   if (!Number.isFinite(Number(id))) {
-      id = sessionStorage.getItem('datasetId') || '0'
+    id = sessionStorage.getItem('datasetId') || '0'
   }
   const { data: data, isLoading } = useQuery({
     queryKey: ['datasets', id],
@@ -83,19 +73,37 @@ export default function DatasetDetail() {
       const data = dataset.data as { hour: any[], day: any[] }
       const timeData = data[selectedTimeRange as keyof typeof data] || []
       return timeData.map(item => {
-        const timePoint = Object.keys(item)[0]
-        const itemData = item[timePoint]
-        return {
-          time: timePoint,
-          AQI: itemData.AQI,
-          Quality: itemData.Quality,
-          PrimaryPollutant: itemData.PrimaryPollutant,
-          PM2_5: itemData.PM2_5,
-          PM10: itemData.PM10,
-          SO2: itemData.SO2,
-          NO2: itemData.NO2,
-          O3: itemData.O3,
-          CO: itemData.CO
+        // 根据不同的时间范围处理不同的字段名
+        if (selectedTimeRange === 'day') {
+          return {
+            [item.TimePoint]: {
+              TimePoint: item.TimePoint,
+              AQI: item.AQI,
+              Quality: item.Quality,
+              PrimaryPollutant: item.PrimaryPollutant,
+              PM2_5: item.PM2_5_24h,
+              PM10: item.PM10_24h,
+              SO2: item.SO2_24h,
+              NO2: item.NO2_24h,
+              O3: item.O3_8h_24h,
+              CO: item.CO_24h
+            }
+          }
+        } else {
+          return {
+            [item.TimePoint]: {
+              TimePoint: item.TimePoint,
+              AQI: item.AQI,
+              Quality: item.Quality,
+              PrimaryPollutant: item.PrimaryPollutant,
+              PM2_5: item.PM2_5,
+              PM10: item.PM10,
+              SO2: item.SO2,
+              NO2: item.NO2,
+              O3: item.O3,
+              CO: item.CO
+            }
+          }
         }
       })
     } else {
@@ -309,7 +317,7 @@ export default function DatasetDetail() {
                   <div className="flex items-center gap-2">
                     <Select
                       value={selectedTimeRange}
-                      onValueChange={setSelectedTimeRange}
+                      onValueChange={handleTimeRangeChange}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="选择时间范围" />
@@ -346,9 +354,10 @@ export default function DatasetDetail() {
                       </TableHeader>
                       <TableBody>
                         {currentItems.map((item: any, index: number) => {
-                          const data = 'hour' in dataset.data ? item : {
+                          const data = {
                             cityName: Object.keys(item)[0],
-                            ...(Object.values(item)[0] as {
+                            ...Object.values(item)[0] as {
+                              TimePoint: string;  // 添加TimePoint字段
                               AQI: string;
                               Quality: string;
                               PrimaryPollutant: string;
@@ -358,18 +367,18 @@ export default function DatasetDetail() {
                               NO2: string;
                               O3: string;
                               CO: string;
-                            })
+                            }
                           }
                           return (
                             <TableRow key={index}>
                               <TableCell className="font-medium">
-                                {'hour' in dataset.data ? data.time : data.cityName}
+                                {'hour' in dataset.data ? new Date(data.TimePoint).toLocaleString() : data.cityName}
                               </TableCell>
                               <TableCell>
                                 <Badge variant={
                                   Number(data.AQI) <= 50 ? 'outline' :
-                                  Number(data.AQI) <= 100 ? 'secondary' :
-                                  'destructive'
+                                    Number(data.AQI) <= 100 ? 'secondary' :
+                                      'destructive'
                                 }>{data.AQI}</Badge>
                               </TableCell>
                               <TableCell>{data.Quality}</TableCell>
@@ -496,11 +505,11 @@ function formatFileSize(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB']
   let size = bytes
   let unitIndex = 0
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024
     unitIndex++
   }
-  
+
   return `${size.toFixed(1)} ${units[unitIndex]}`
 }
