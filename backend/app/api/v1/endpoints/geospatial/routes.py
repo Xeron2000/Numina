@@ -168,7 +168,7 @@ async def get_cityhistory_data(
             "Referer": "https://air.cnemc.cn:18007/",
     }
 
-    response = requests.get(url, headers=headers)
+    response = requests.post(url, headers=headers)
     try:
         data = response.json()
         for item in data:

@@ -31,8 +31,8 @@ export interface MapData {
 }
 
 export interface CityResponseData {
-  cityData:  Record<string, any>;
-  provinceData: Array<any>;
+  cityData:  any;
+  provinceData: any;
 }
 
 export interface CityData {
