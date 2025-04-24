@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useToast } from "@/hooks/use-toast"
 import * as echarts from 'echarts';
 import { format } from 'date-fns';
 import { Search, ArrowLeft, ChevronRight, Loader2, RefreshCw, Save } from 'lucide-react';
@@ -16,7 +17,7 @@ import { datasetsApi } from '@/api/datasets';
 import { MapContext } from './context/MapContext';
 
 const { getCitySiteData, getCityData, getCityHistoryData } = geospatialApi;
-const { upload, uploaddict } = datasetsApi;
+const { upload, uploaddict, uploadcode } = datasetsApi;
 
 import {
   CardContent,
@@ -59,6 +60,7 @@ interface CityDetailData {
 }
 
 export default function GeospatialMap() {
+  const { toast } = useToast();
   const exampleData = {
     TimePoint: '',
     Area: '',
@@ -277,6 +279,9 @@ export default function GeospatialMap() {
         if (allData && allData[provinceName]?.[0]) {
           const cityData = Object.values(allData[provinceName][0])[0] as CityDetailData;
           setCurrentData(cityData || exampleData);
+          console.log('当前数据:', cityData.Area);
+          console.log('当前数据:', cityData.CityCode);
+          citySiteData(cityData.Area, provinceName); // 传入当前地图名称作为省份名
         } else {
           setCurrentData(exampleData);
         }
@@ -381,17 +386,50 @@ export default function GeospatialMap() {
     setSearchResults(matchedCities);
     setShowDropdown(true);
   };
-  const dataSets = () => {
-    console.log(currentView)
-    if (currentView === 'china') {
-      const data = JSON.parse(sessionStorage.getItem('cityData') || '{}')
-      console.log(currentView)
-      const response = uploaddict(data);
-      console.log(response)
-    } else {
-      const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
-      const datas = raw[currentView] || [];  // 确保是数组
-      upload(datas, currentView);
+
+  const dataSets = async () => {
+    try {
+      if (currentView === 'china') {
+        const data = JSON.parse(sessionStorage.getItem('cityData') || '{}')
+        await uploaddict(data);
+      } else {
+        const raw = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+        const datas = raw[currentView] || [];  // 确保是数组
+        await upload(datas, currentView);
+      }
+      toast({
+        description: `${currentView === 'china' ? '全国' : currentView}数据保存成功，请前往数据集列表查看`,
+        className: "fixed top-4 left-1/2 w-fit bg-white",
+        duration: 2000, // 2秒后自动消失
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "数据保存失败，请重试",
+        className: "fixed top-4 left-1/2 w-fit bg-red",
+        duration: 2000,
+      })
+    }
+  }
+
+  const historyDataSets = async () => {
+    try {
+      const cityname = currentData.Area;
+      const citycode = currentData.CityCode;
+      
+      await uploadcode(cityname, String(citycode));
+      toast({
+        description: `${cityname}历史数据保存成功，请前往数据集列表查看`,
+        className: "fixed top-4 left-1/2 w-fit bg-white",
+        duration: 2000, // 2秒后自动消失
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "数据保存失败，请重试",
+        className: "fixed top-4 left-1/2 w-fit bg-red",
+        duration: 2000,
+      })
     }
   }
 
@@ -462,13 +500,27 @@ export default function GeospatialMap() {
                       </div>
                     ) : null}
                     <div ref={chartRef} className="absolute inset-0" />
-                    {currentView !== 'china' && (
-                      <div className="absolute right-10 top-4 z-10 flex gap-2">
-                        <button onClick={dataSets} className="btn">
-                          datasets
-                        </button>
+                      <div className="absolute right-16 top-4 z-10 flex gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={dataSets}
+                                className="ml-auto h-8 w-8"
+                                disabled={isLoading}
+                              >
+                                <Save className="h-4 w-4" />
+                                <span className="sr-only">获取{currentView === "china" ? "全国" : currentView}数据</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>获取{currentView === "china" ? "全国" : currentView}数据</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
-                    )}
                     <div className="absolute right-4 top-4 z-10 flex gap-2">
                       <Button
                         variant="outline"
@@ -536,7 +588,7 @@ export default function GeospatialMap() {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={handleBack}
+                            onClick={historyDataSets}
                             className="ml-auto h-8 w-8"
                             disabled={isLoading}
                           >
@@ -558,7 +610,7 @@ export default function GeospatialMap() {
                           <div>
                             <div className="text-2xl font-bold">{currentData.AQI}</div>
                             <div className="text-xs text-muted-foreground">
-                              {currentData.Area}空气质量指数 (AQI)
+                              <span className='font-bold text-black text-[18px]'>{currentData.Area}</span>空气质量指数 (AQI)
                             </div>
                           </div>
                           <Badge variant="secondary" className={`

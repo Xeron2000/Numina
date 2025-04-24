@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { datasetsApi, Dataset } from '@/api/datasets'  // Import Dataset type from API
@@ -14,17 +15,28 @@ interface DatasetResponse {
 
 export default function Datasets() {
   const { toast } = useToast()
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 5
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['datasets'],
     queryFn: async () => {
       try {
-        const response = await datasetsApi.getAll()
-
-        console.log('response', response)
+        const data = await datasetsApi.getAll()
+        const response = data as unknown as DatasetResponse
         if (!response) {
           throw new Error('No data received from server')
         }
-        return response as unknown as DatasetResponse  // 使用类型断言
+        
+        // 对数据进行倒序排序
+        const sortedItems = [...response.items].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        
+        return {
+          items: sortedItems,
+          total: response.total
+        } as DatasetResponse
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -35,6 +47,14 @@ export default function Datasets() {
       }
     }
   })
+
+  // 计算分页数据
+  const paginatedData = data?.items?.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const totalPages = Math.ceil((data?.items?.length || 0) / pageSize)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
   return (
     <>
@@ -47,11 +67,6 @@ export default function Datasets() {
             </p>
           </div>
         </div>
-        <button onClick={()=>{
-          datasetsApi.getById(3).then(res=>{
-            console.log('res', res)
-          })
-        }}>get</button>
       </Header>
 
       <Main>
@@ -64,7 +79,12 @@ export default function Datasets() {
         ) : !data?.items?.length ? (
           <EmptyState />
         ) : (
-          <DatasetList datasets={data.items} />
+          <DatasetList 
+            datasets={paginatedData || []} 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </Main>
     </>

@@ -1,3 +1,4 @@
+from requests import Response
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import ValidationError, parse_raw_as
 from sqlalchemy.orm import Session
@@ -15,6 +16,7 @@ from app.schemas.dataset import (
     DatasetCreate, DatasetUpdate, DatasetResponse, DatasetList
 )
 from app.utils.file_handler import validate_file_extension, save_upload_file, get_file_info
+from app.utils.city_history_data import get_cityhistory_data
 
 router = APIRouter()
 
@@ -63,6 +65,43 @@ async def get_dataset(
         raise HTTPException(status_code=500, detail=str(e))
     return dataset_dict
 #  response_model=DatasetResponse
+@router.post("/uploadhistory")
+async def uploadhistory(
+    cityname: str = Form(...),
+    citycode: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    dataset_in = get_cityhistory_data(citycode)
+    unique_filename = f"{cityname}_history_{uuid.uuid4()}"  # Remove the extra dot
+    file_path = os.path.join('datasets', f'{unique_filename}.json')
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    # 写入JSON文件
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(dataset_in, f, ensure_ascii=False, indent=4)
+        
+    # 获取文件大小
+    file_size = os.path.getsize(file_path)
+
+    # 创建数据集记录
+    db_dataset = Dataset(
+        name=cityname,
+        description=f"Historical air quality data for {cityname}",
+        owner_id=current_user.id,
+        file_path=file_path,
+        file_type='json',
+        file_size=file_size,
+        row_count=len(dataset_in) if isinstance(dataset_in, list) else len(dataset_in.keys()),
+        columns_info={"data": "Air quality measurements"},
+        status='ready'
+    )
+    
+    db.add(db_dataset)
+    db.commit()
+    db.refresh(db_dataset)
+        
+    return db_dataset    
+
 @router.post("/upload")
 async def upload_dataset(
     name: str = Form(...),
@@ -78,7 +117,6 @@ async def upload_dataset(
         unique_filename = f"{name}_{uuid.uuid4()}"  # Remove the extra dot
         file_path = os.path.join('datasets', f'{unique_filename}.json')
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        print(file_path)
         # 写入JSON文件
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(dataset_in, f, ensure_ascii=False, indent=4)

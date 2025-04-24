@@ -37,21 +37,21 @@ export const sidebarData: SidebarData = {
           title: '数据集',
           url: '/apps/datasets',
           icon: IconDatabase,
-          items: [
-            {
-              title: '数据集列表',
-              url: '/apps/datasets',
-            },
+          // items: [
+            // {
+              // title: '数据集列表',
+              // url: '/apps/datasets',
+            // },
             // {
             //   title: '上传数据集',
             //   url: '/apps/datasets/upload',
             // },
-            {
-              title: '数据集详情',
-              url: '/apps/datasets/$id',
-              hidden: true,
-            }
-          ]
+            // {
+            //   title: '数据集详情',
+            //   url: '/apps/datasets/$id',
+            //   hidden: true,
+            // }
+          // ]
         },
         {
           title: '分析工具',

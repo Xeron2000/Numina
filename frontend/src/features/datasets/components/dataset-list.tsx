@@ -9,9 +9,20 @@ import {
 import { Dataset } from '@/api/datasets'
 import { useNavigate } from '@tanstack/react-router'
 import { Badge } from '@/components/ui/badge'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface DatasetListProps {
   datasets: Dataset[]
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
 }
 
 // 文件大小格式化函数
@@ -25,7 +36,7 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${units[i]}`
 }
 
-export function DatasetList({ datasets }: DatasetListProps) {
+export function DatasetList({ datasets, currentPage, totalPages, onPageChange }: DatasetListProps) {
   const navigate = useNavigate()
 
   const handleRowClick = (id: number) => {
@@ -47,48 +58,78 @@ export function DatasetList({ datasets }: DatasetListProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>名称</TableHead>
-          <TableHead>描述</TableHead>
-          <TableHead>文件类型</TableHead>
-          <TableHead>文件大小</TableHead>
-          <TableHead>行数</TableHead>
-          <TableHead>状态</TableHead>
-          <TableHead>创建时间</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {datasets.map((dataset) => (
-          <TableRow
-            key={dataset.id}
-            className="cursor-pointer"
-            onClick={() => handleRowClick(dataset.id)}
-          >
-            <TableCell className="font-medium">{dataset.name}</TableCell>
-            <TableCell>{dataset.description || '暂无描述'}</TableCell>
-            <TableCell>{dataset.file_type.toUpperCase()}</TableCell>
-            <TableCell>{formatFileSize(dataset.file_size)}</TableCell>
-            <TableCell>{dataset.row_count}</TableCell>
-            <TableCell>
-              <Badge variant={getStatusBadgeVariant(dataset.status)}>
-                {dataset.status === 'ready' ? '就绪' : 
-                 dataset.status === 'processing' ? '处理中' : '错误'}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              {new Date(dataset.created_at).toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </TableCell>
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>名称</TableHead>
+            <TableHead>描述</TableHead>
+            <TableHead>文件类型</TableHead>
+            <TableHead>文件大小</TableHead>
+            <TableHead>行数</TableHead>
+            <TableHead>状态</TableHead>
+            <TableHead>创建时间</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {datasets.map((dataset) => (
+            <TableRow
+              key={dataset.id}
+              className="cursor-pointer"
+              onClick={() => handleRowClick(dataset.id)}
+            >
+              <TableCell className="font-medium">{dataset.name}</TableCell>
+              <TableCell>{dataset.description || '暂无描述'}</TableCell>
+              <TableCell>{dataset.file_type.toUpperCase()}</TableCell>
+              <TableCell>{formatFileSize(dataset.file_size)}</TableCell>
+              <TableCell>{dataset.row_count}</TableCell>
+              <TableCell>
+                <Badge variant={getStatusBadgeVariant(dataset.status)}>
+                  {dataset.status === 'ready' ? '就绪' : 
+                   dataset.status === 'processing' ? '处理中' : '错误'}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {new Date(dataset.created_at).toLocaleString('zh-CN', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex justify-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => onPageChange(page)}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    </div>
   )
 }

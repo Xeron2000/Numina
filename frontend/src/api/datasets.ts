@@ -60,5 +60,17 @@ export const datasetsApi = {
         'Content-Type': 'multipart/form-data',
       },
     })
-  }
+  },
+
+  uploadcode: async (name:string,code:string) => {
+    const formData = new FormData()
+    formData.append('cityname', name)
+    formData.append('citycode', code)
+    
+    return http.post('/api/datasets/uploadhistory', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
 }

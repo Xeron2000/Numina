@@ -25,6 +25,7 @@ interface CityData {
   [cityName: string]: {
     AQI: string;
     Quality: string;
+    TimePoint: string;
     PrimaryPollutant: string;
     PM2_5: string;
     PM10: string;
@@ -36,12 +37,29 @@ interface CityData {
   }
 }
 
+// interface historyData {
+//   [time: string] : {
+//     AQI: string;
+//     Quality: string;
+//     TimePoint: string;
+//     PrimaryPollutant: string;
+//     PM2_5: string;
+//     PM10: string;
+//     SO2: string;
+//     NO2: string;
+//     O3: string;
+//     CO: string;
+//     Measure?: string;
+//   }[]
+// }
+
 interface DatasetData {
   [province: string]: CityData[];
 }
 
 export default function DatasetDetail() {
   const [selectedProvince, setSelectedProvince] = useState<string>('')
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('hour')
   const [page, setPage] = useState(1)
   const itemsPerPage = 5
 
@@ -61,10 +79,29 @@ export default function DatasetDetail() {
     if (dataset.name === 'china') {
       const provinceData = (dataset.data as DatasetData)[selectedProvince]
       return selectedProvince && provinceData ? provinceData : []
+    } else if ('hour' in dataset.data) {
+      const data = dataset.data as { hour: any[], day: any[] }
+      const timeData = data[selectedTimeRange as keyof typeof data] || []
+      return timeData.map(item => {
+        const timePoint = Object.keys(item)[0]
+        const itemData = item[timePoint]
+        return {
+          time: timePoint,
+          AQI: itemData.AQI,
+          Quality: itemData.Quality,
+          PrimaryPollutant: itemData.PrimaryPollutant,
+          PM2_5: itemData.PM2_5,
+          PM10: itemData.PM10,
+          SO2: itemData.SO2,
+          NO2: itemData.NO2,
+          O3: itemData.O3,
+          CO: itemData.CO
+        }
+      })
     } else {
       return dataset.data as CityData[]
     }
-  }, [dataset, selectedProvince])
+  }, [dataset, selectedProvince, selectedTimeRange])
 
   const totalItems = currentData.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -250,7 +287,7 @@ export default function DatasetDetail() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className='text-2xl'>数据预览</CardTitle>
-                {dataset.name === 'china' && (
+                {dataset.name === 'china' ? (
                   <div className="flex items-center gap-2">
                     <Select
                       value={selectedProvince}
@@ -268,7 +305,22 @@ export default function DatasetDetail() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                ) : 'hour' in dataset.data ? (
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedTimeRange}
+                      onValueChange={setSelectedTimeRange}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="选择时间范围" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hour">小时数据</SelectItem>
+                        <SelectItem value="day">天数据</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -276,7 +328,11 @@ export default function DatasetDetail() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>城市</TableHead>
+                          {'hour' in dataset.data ? (
+                            <TableHead>时间</TableHead>
+                          ) : (
+                            <TableHead>城市</TableHead>
+                          )}
                           <TableHead>AQI</TableHead>
                           <TableHead>空气质量</TableHead>
                           <TableHead>主要污染物</TableHead>
@@ -289,12 +345,26 @@ export default function DatasetDetail() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {currentItems.map((cityData: any, index: number) => {
-                          const cityName = Object.keys(cityData)[0];
-                          const data = cityData[cityName];
+                        {currentItems.map((item: any, index: number) => {
+                          const data = 'hour' in dataset.data ? item : {
+                            cityName: Object.keys(item)[0],
+                            ...(Object.values(item)[0] as {
+                              AQI: string;
+                              Quality: string;
+                              PrimaryPollutant: string;
+                              PM2_5: string;
+                              PM10: string;
+                              SO2: string;
+                              NO2: string;
+                              O3: string;
+                              CO: string;
+                            })
+                          }
                           return (
-                            <TableRow key={`${cityName}-${index}`}>
-                              <TableCell className="font-medium">{cityName}</TableCell>
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">
+                                {'hour' in dataset.data ? data.time : data.cityName}
+                              </TableCell>
                               <TableCell>
                                 <Badge variant={
                                   Number(data.AQI) <= 50 ? 'outline' :
@@ -311,7 +381,7 @@ export default function DatasetDetail() {
                               <TableCell>{data.O3}</TableCell>
                               <TableCell>{data.CO}</TableCell>
                             </TableRow>
-                          );
+                          )
                         })}
                       </TableBody>
                     </Table>

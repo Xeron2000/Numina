@@ -98,8 +98,6 @@ async def get_city_data(
     for key, value in provinceData.items():
         provinceData1.append({"name":key,"value":sum(value) // len(value)})
 
-    print("cityData")
-
     return {
         "cityData": cityData,
         "provinceData": provinceData1
@@ -128,7 +126,6 @@ async def get_citysite_data(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):  
-    print(cityname)
     citysiteData = []
 
     # citysite,get
@@ -142,11 +139,9 @@ async def get_citysite_data(
 
     response = requests.get(url, headers=headers)
     datas = response.json()
-    print(len(datas))
     for item in datas:
         filtered_data = {key: item[key] for key in citysiteKey if key in item}
         citysiteData.append(filtered_data)
-    print(len(citysiteData))
     return {
         "cityname": cityname,
         "citysiteData": citysiteData
@@ -158,7 +153,6 @@ async def get_cityhistory_data(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    print(citycode)
     cityhistoryData = []
     url = f'https://air.cnemc.cn:18007/HourChangesPublish/GetCityRealTimeAqiHistoryByCondition?citycode={citycode}'
     
