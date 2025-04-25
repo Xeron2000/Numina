@@ -101,13 +101,18 @@ export function DatasetList({ datasets, currentPage, totalPages, onPageChange, o
                       </Badge>
                     </TableCell>
                     <TableCell onClick={() => handleRowClick(dataset.id)}>
-                      {new Date(dataset.created_at).toLocaleString('zh-CN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {(() => {
+                        const date = new Date(dataset.created_at)
+                        date.setHours(date.getHours() + 8)
+                        return date.toLocaleString('zh-CN', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false
+                        })
+                      })()}
                     </TableCell>
                     <TableCell>
                       <Button

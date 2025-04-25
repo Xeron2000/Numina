@@ -156,7 +156,11 @@ export default function AnalyticsHistory() {
                           <TableCell>{task.name}</TableCell>
                           <TableCell>{task.status}</TableCell>
                           <TableCell>
-                            {format(new Date(task.created_at), 'yyyy-MM-dd HH:mm')}
+                            {(() => {
+                              const date = new Date(task.created_at)
+                              date.setHours(date.getHours() + 8)
+                              return format(date, 'yyyy-MM-dd HH:mm')
+                            })()}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button

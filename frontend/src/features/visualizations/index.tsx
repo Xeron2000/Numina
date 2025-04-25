@@ -220,7 +220,13 @@ export default function Visualizations() {
                       <td className="p-2">{formatFileSize(selectedDataset.file_size)}</td>
                       <td className="p-2">{selectedDataset.row_count}</td>
                       <td className="p-2">{selectedDataset.status}</td>
-                      <td className="p-2">{format(new Date(selectedDataset.created_at), 'yyyy-MM-dd HH:mm')}</td>
+                      <td className="p-2">
+                        {(() => {
+                          const date = new Date(selectedDataset.created_at)
+                          date.setHours(date.getHours() + 8)
+                          return format(date, 'yyyy-MM-dd HH:mm')
+                        })()}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
