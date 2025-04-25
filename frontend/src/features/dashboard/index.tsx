@@ -11,10 +11,8 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { useEffect, useState } from 'react'
 import { DashboardStats, dashboardApi } from '@/api/dashboard'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { format } from 'date-fns'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Pie, PieChart } from 'recharts'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cityDataService } from '@/services/city-data'
 
 export default function Dashboard() {
@@ -43,7 +41,7 @@ export default function Dashboard() {
       '重度污染': { count: 0, color: '#99004c' },
       '严重污染': { count: 0, color: '#7e0023' }
     }
-    
+
     // 处理数据对象
     if (typeof data === 'object' && data !== null) {
       Object.values(data).forEach(provinceData => {
@@ -76,14 +74,21 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsResponse, cityDataResponse] = await Promise.all([
-          dashboardApi.getStats(),
-          cityDataService.getCityData()
-        ]);
-        
+        const statsResponse = await dashboardApi.getStats();
         setStats((statsResponse.data as unknown) as DashboardStats);
-        const categorizedData = processAirQualityData(cityDataResponse.cityData);
-        setCityAirQuality(categorizedData);
+
+        // 检查 sessionStorage 中是否已有数据
+        const storedCityData = sessionStorage.getItem('cityData');
+        if (storedCityData) {
+          // 如果有缓存数据，直接使用
+          const categorizedData = processAirQualityData(JSON.parse(storedCityData));
+          setCityAirQuality(categorizedData);
+        } else {
+          // 如果没有缓存数据，才去获取
+          const cityDataResponse = await cityDataService.getCityData();
+          const categorizedData = processAirQualityData(cityDataResponse.cityData);
+          setCityAirQuality(categorizedData);
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -111,12 +116,12 @@ export default function Dashboard() {
     },
     {
       title: '整体空气质量',
-      value: cityAirQuality ? 
+      value: cityAirQuality ?
         (() => {
           const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
           let totalAQI = 0;
           let cityCount = 0;
-          
+
           Object.values(cityData).forEach((provinceData: any) => {
             if (Array.isArray(provinceData)) {
               provinceData.forEach(cityObj => {
@@ -132,7 +137,7 @@ export default function Dashboard() {
               });
             }
           });
-          
+
           return cityCount > 0 ? Math.round(totalAQI / cityCount) : '-';
         })() : '-',
       description: '全国城市平均AQI指数',
@@ -140,9 +145,9 @@ export default function Dashboard() {
       link: '/apps/geospatial/map'
     }
   ]
-  
+
   console.log('Current stats:', stats)
-  
+
   return (
     <>
       <Header>
@@ -207,36 +212,42 @@ export default function Dashboard() {
                     暂无空气质量数据
                   </div>
                 ) : (
-                  <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={cityAirQuality}>
-                        <XAxis 
-                          dataKey="name"
-                          interval={0}
-                          angle={30}
-                          textAnchor="start"
-                          height={60}
-                          fontSize={12}
-                          tickMargin={20}
-                        />
-                        <YAxis />
-                        <Tooltip 
-                          formatter={(value: number) => [`${value} 个城市`, '数量']}
-                          labelStyle={{ color: '#666' }}
-                        />
-                        <Bar 
-                          dataKey="count" 
-                          name="城市数量"
-                          maxBarSize={50}
-                        >
-                          {
-                            cityAirQuality?.map((entry: { color: string | undefined }, index: any) => (
+                  <div className="h-[300px] flex items-center justify-between">
+                    <div className="h-[300px] w-[60%]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={cityAirQuality}
+                            dataKey="count"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                          >
+                            {cityAirQuality?.map((entry: { color: string | undefined }, index: any) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))
-                          }
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value: number) => [`${value} 个城市`, '数量']}
+                            labelStyle={{ color: '#666' }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="w-[40%] space-y-2">
+                      {cityAirQuality.map((item: any, index: number) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-sm" 
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-sm">
+                            {item.name}：{item.count} 个城市
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -244,7 +255,7 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>最新活动</CardTitle>
+                <CardTitle>空气质量最差城市 TOP10</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -253,38 +264,104 @@ export default function Dashboard() {
                       <Skeleton key={i} className="h-12 w-full" />
                     ))}
                   </div>
-                ) : !stats?.recent_activities?.length ? (
-                  <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-                    暂无活动记录
-                  </div>
                 ) : (
-                  <ScrollArea className="h-[300px]">
-                    <div className="space-y-4">
-                      {stats?.recent_activities.map((activity, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">{activity.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(activity.created_at), 'yyyy-MM-dd HH:mm')}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs capitalize px-2 py-1 rounded-full ${
-                              activity.action === 'create' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : activity.action === 'delete'
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                            }`}>
-                              {activity.action === 'create' ? '新增' 
-                                : activity.action === 'delete' ? '删除' 
-                                : '分析'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={(() => {
+                          const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+                          const worstCities: { name: string; aqi: number; quality: any }[] = [];
+
+                          Object.entries(cityData).forEach(([province, cities]: [string, any]) => {
+                            if (Array.isArray(cities)) {
+                              cities.forEach((cityObj: any) => {
+                                Object.entries(cityObj).forEach(([cityName, data]: [string, any]) => {
+                                  if (data && typeof data.AQI === 'string') {
+                                    const aqi = parseFloat(data.AQI);
+                                    if (!isNaN(aqi)) {
+                                      worstCities.push({
+                                        name: `${province}-${cityName}`,
+                                        aqi: aqi,
+                                        quality: data.Quality
+                                      });
+                                    }
+                                  }
+                                });
+                              });
+                            }
+                          });
+
+                          return worstCities
+                            .sort((a, b) => b.aqi - a.aqi)
+                            .slice(0, 10);
+                        })()}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                      >
+                        <XAxis
+                          dataKey="name"
+                          angle={45}
+                          textAnchor="start"
+                          height={60}
+                          interval={0}
+                          fontSize={12}
+                        />
+                        <YAxis
+                          dataKey="aqi"
+                          type="number"
+                          domain={['auto', 'auto']}
+                        />
+                        <Tooltip
+                          formatter={(value: any, name: string) => {
+                            if (name === 'aqi') return [`AQI: ${value}`, '空气质量指数'];
+                            return [value, name];
+                          }}
+                        />
+                        <Bar dataKey="aqi" fill="#ff7e00" name="aqi">
+                          {
+                            (() => {
+                              const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
+                              const worstCities: { name: string; aqi: number; quality: any }[] = [];
+
+                              Object.entries(cityData).forEach(([province, cities]: [string, any]) => {
+                                if (Array.isArray(cities)) {
+                                  cities.forEach((cityObj: any) => {
+                                    Object.entries(cityObj).forEach(([cityName, data]: [string, any]) => {
+                                      if (data && typeof data.AQI === 'string') {
+                                        const aqi = parseFloat(data.AQI);
+                                        if (!isNaN(aqi)) {
+                                          worstCities.push({
+                                            name: `${province}-${cityName}`,
+                                            aqi: aqi,
+                                            quality: data.Quality
+                                          });
+                                        }
+                                      }
+                                    });
+                                  });
+                                }
+                              });
+
+                              return worstCities
+                                .sort((a, b) => b.aqi - a.aqi)
+                                .slice(0, 10)
+                                .map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={
+                                      entry.aqi > 300 ? '#7e0023' :
+                                      entry.aqi > 200 ? '#99004c' :
+                                      entry.aqi > 150 ? '#ff0000' :
+                                      entry.aqi > 100 ? '#ff7e00' :
+                                      entry.aqi > 50 ? '#ffff00' : '#00e400'
+                                    }
+                                  />
+                                ));
+                            })()
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>
