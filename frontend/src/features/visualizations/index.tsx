@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/header'
 import { useEffect, useState } from 'react'
+import { saveAs } from 'file-saver'
 import { datasetsApi, Dataset } from '@/api/datasets'
 import { useToast } from '@/hooks/use-toast'
 import { useQuery } from '@tanstack/react-query'
@@ -18,8 +19,9 @@ import ReactECharts from 'echarts-for-react'
 import { useLocation } from '@tanstack/react-router'
 import { analyticsApi } from '@/api/analytics'
 import { Brain } from 'lucide-react'
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import ReactMarkdown from 'react-markdown'
+import { Document, Paragraph, Packer, HeadingLevel } from 'docx'
 interface DatasetResponse {
   items: Dataset[]
   total: number
@@ -39,7 +41,7 @@ export default function Visualizations() {
   const [isLlmLoading, setIsLlmLoading] = useState(false)  // 添加加载状态
 
   // 初始化 Gemini
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY as string);
+  const genAI = new GoogleGenerativeAI("");
 
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
@@ -329,6 +331,51 @@ export default function Visualizations() {
                       <Brain className="h-5 w-5" />
                       智能分析结果
                     </DialogTitle>
+                    <Button
+                      disabled={isLlmLoading}
+                      onClick={async () => {
+                        try {
+                          // 创建文档
+                          const doc = new Document({
+                            sections: [{
+                              properties: {},
+                              children: [
+                                new Paragraph({
+                                  text: "空气质量分析报告",
+                                  heading: HeadingLevel.HEADING_1
+                                }),
+                                new Paragraph({
+                                  text: "\n"
+                                }),
+                                ...llmAnalysis.split('\n').map(line => 
+                                  new Paragraph({
+                                    text: line.trim(),
+                                    spacing: {
+                                      after: 200
+                                    }
+                                  })
+                                )
+                              ]
+                            }]
+                          });
+
+                          // 生成blob
+                          const blob = await Packer.toBlob(doc);
+                          
+                          // 保存文件
+                          saveAs(blob, "分析报告.docx");
+                        } catch (error) {
+                          console.error('生成文档失败:', error);
+                          toast({
+                            variant: "destructive",
+                            title: '错误',
+                            description: '生成文档失败，请重试'
+                          });
+                        }
+                      }}
+                    >
+                      导出报告
+                    </Button>
                   </DialogHeader>
                   <div className="space-y-4 py-4 overflow-y-auto flex-1">
                     <div className="prose prose-sm max-w-none dark:prose-invert">
