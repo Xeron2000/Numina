@@ -8,7 +8,17 @@ sys.path.append(str(backend_dir))
 
 from app.db.base import Base
 from app.db.session import engine
-from app.models import User, Dataset, SavedQuery, Visualization, UserSettings, GeoFence
+from app.models import (
+    User, 
+    Dataset, 
+    SavedQuery, 
+    Visualization, 
+    UserSettings, 
+    GeoFence,
+    Activity,  # 添加活动日志模型
+    Station,   # 添加气象站点模型
+    AnalyticsTask  # 添加分析任务模型
+)
 
 def init_db():
     try:

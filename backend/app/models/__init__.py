@@ -7,7 +7,8 @@ from app.models.visualization import Visualization
 from app.models.settings import UserSettings
 from app.models.geospatial import GeoFence
 from app.models.activity import Activity
-from app.models.station import Station  # Add this line
+from app.models.station import Station
+from app.models.analytics import AnalyticsTask  # Add this line
 
 # 设置关系
 User.datasets = relationship("Dataset", back_populates="owner", cascade="all, delete-orphan")
@@ -15,3 +16,4 @@ User.visualizations = relationship("Visualization", back_populates="owner", casc
 User.saved_queries = relationship("SavedQuery", back_populates="owner", cascade="all, delete-orphan")
 User.geofences = relationship("GeoFence", back_populates="owner", cascade="all, delete-orphan")
 User.settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+User.analytics_tasks = relationship("AnalyticsTask", back_populates="owner", cascade="all, delete-orphan")
