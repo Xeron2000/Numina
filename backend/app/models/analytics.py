@@ -1,11 +1,10 @@
-# Add Enum to the import statement
 from sqlalchemy import Column, Integer, String, JSON, ForeignKey, DateTime, Text, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import BaseModel
-from enum import Enum
+from enum import Enum as PyEnum  # Rename to avoid conflict
 
-class TaskStatus(str, Enum):
+class TaskStatus(str, PyEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -16,7 +15,7 @@ class AnalyticsTask(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=True)
-    status = Column(SQLEnum(TaskStatus), nullable=False)
+    status = Column(Enum(TaskStatus), nullable=False)  # Use SQLAlchemy's Enum directly
     query_string = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
