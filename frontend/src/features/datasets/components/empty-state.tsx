@@ -13,7 +13,7 @@ export function EmptyState() {
         </div>
         <h3 className="mt-4 text-lg font-semibold">没有数据集</h3>
         <p className="mb-4 mt-2 text-sm text-muted-foreground">
-          开始上传您的第一个数据集。您可以上传 CSV 或 Excel 文件。
+          开始上传您的第一个数据集。
         </p>
         <div className="flex gap-2">
           <Button onClick={() => navigate({ to: '/apps/geospatial/map' })}>

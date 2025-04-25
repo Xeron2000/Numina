@@ -27,7 +27,6 @@ htmlcov/
 /dist
 
 # database
-*.db
 *.sqlite
 *.sqlite3
 
