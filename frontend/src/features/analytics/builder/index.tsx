@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Play, Save, Settings2, Download } from 'lucide-react'
 import { analyticsApi } from '@/api/analytics'
 import { Button } from '@/components/ui/button'
@@ -43,33 +43,23 @@ export default function AnalyticsBuilder() {
     enabled: false
   })
 
-  const saveQueryMutation = useMutation({
-    mutationFn: (data: { name: string; description: string }) =>
-      analyticsApi.createSavedQuery({
-        name: data.name,
-        description: data.description,
-        query_string: queryString,
-        dataset_id: selectedDataset!,
-      }),
-    onSuccess: () => {
-      toast.success('查询已保存')
-      setSaveDialogOpen(false)
-    },
-    onError: () => {
-      toast.error('保存查询失败')
-    },
-  })
+  // const saveQueryMutation = useMutation({
+  //   mutationFn: (data: { name: string; description: string }) =>
+  //     analyticsApi.createSavedQuery({
+  //       name: data.name,
+  //       description: data.description,
+  //       query_string: queryString,
+  //       dataset_id: selectedDataset!,
+  //     }),
+  //   onSuccess: () => {
+  //     toast.success('查询已保存')
+  //     setSaveDialogOpen(false)
+  //   },
+  //   onError: () => {
+  //     toast.error('保存查询失败')
+  //   },
+  // })
 
-  const handleSaveQuery = () => {
-    if (!queryName.trim()) {
-      toast.error('请输入查询名称')
-      return
-    }
-    saveQueryMutation.mutate({
-      name: queryName,
-      description: queryDescription,
-    })
-  }
 
   const handleRunQuery = () => {
     if (!selectedDataset) {
@@ -142,13 +132,7 @@ export default function AnalyticsBuilder() {
                       placeholder="输入查询描述（可选）"
                     />
                   </div>
-                  <Button
-                    className="w-full"
-                    onClick={handleSaveQuery}
-                    disabled={saveQueryMutation.isPending}
-                  >
-                    {saveQueryMutation.isPending ? '保存中...' : '保存'}
-                  </Button>
+  
                 </div>
               </DialogContent>
             </Dialog>

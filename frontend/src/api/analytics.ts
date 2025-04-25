@@ -42,10 +42,17 @@ export const analyticsApi = {
   deleteTask: (id: number) =>
     http.delete<void>(`/api/analytics/tasks/${id}`),
 
-  // Add the new method
-  createSavedQuery: (data: SavedQueryCreate) =>
-    http.post<SavedQuery>('/api/analytics/saved-queries', data),
-  
-  getTasks: (params?: { skip?: number; limit?: number }) =>
-    http.get<AnalyticsTaskList>('/api/analytics/tasks', { params }),
+  // Add the new task
+  createSavedQuery: (query_in: number) => {
+    const formData = new FormData();
+    formData.append('query_in', String(query_in));
+    return http.post('/api/analytics/saved-queries', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+},
+  // all tasks
+  getTasks: () =>
+    http.get('/api/analytics/tasks'),
 }

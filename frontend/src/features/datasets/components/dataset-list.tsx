@@ -18,6 +18,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface DatasetListProps {
   datasets: Dataset[]
@@ -76,48 +82,54 @@ export function DatasetList({ datasets, currentPage, totalPages, onPageChange, o
         </TableHeader>
         <TableBody>
           {datasets.map((dataset) => (
-            <TableRow
-              key={dataset.id}
-              className="cursor-pointer"
-            >
-              <TableCell 
-                className="font-medium"
-                onClick={() => handleRowClick(dataset.id)}
-              >{dataset.name}</TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.description || '暂无描述'}</TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.file_type.toUpperCase()}</TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>{formatFileSize(dataset.file_size)}</TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.row_count}</TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>
-                <Badge variant={getStatusBadgeVariant(dataset.status)}>
-                  {dataset.status === 'ready' ? '就绪' : 
-                   dataset.status === 'processing' ? '处理中' : '错误'}
-                </Badge>
-              </TableCell>
-              <TableCell onClick={() => handleRowClick(dataset.id)}>
-                {new Date(dataset.created_at).toLocaleString('zh-CN', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm('确定要删除这个数据集吗？')) {
-                      onDelete(dataset.id)
-                    }
-                  }}
-                >
-                  删除
-                </Button>
-              </TableCell>
-            </TableRow>
+            <TooltipProvider key={dataset.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TableRow className="cursor-pointer">
+                    <TableCell 
+                      className="font-medium"
+                      onClick={() => handleRowClick(dataset.id)}
+                    >{dataset.name}</TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.description || '暂无描述'}</TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.file_type.toUpperCase()}</TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>{formatFileSize(dataset.file_size)}</TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>{dataset.row_count}</TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>
+                      <Badge variant={getStatusBadgeVariant(dataset.status)}>
+                        {dataset.status === 'ready' ? '就绪' : 
+                         dataset.status === 'processing' ? '处理中' : '错误'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell onClick={() => handleRowClick(dataset.id)}>
+                      {new Date(dataset.created_at).toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('确定要删除这个数据集吗？')) {
+                            onDelete(dataset.id)
+                          }
+                        }}
+                      >
+                        删除
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>点击查看数据详情</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </TableBody>
       </Table>
