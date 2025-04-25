@@ -15,6 +15,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { format } from 'date-fns'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { cityDataService } from '@/services/city-data'
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -72,24 +73,26 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const response = await dashboardApi.getStats()
-        setStats((response.data as unknown) as DashboardStats)
+        setLoading(true);
+        const [statsResponse, cityDataResponse] = await Promise.all([
+          dashboardApi.getStats(),
+          cityDataService.getCityData()
+        ]);
         
-        // 从 sessionStorage 获取城市空气质量数据
-        const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}')
-        const categorizedData = processAirQualityData(cityData)
-        setCityAirQuality(categorizedData)
+        setStats((statsResponse.data as unknown) as DashboardStats);
+        const categorizedData = processAirQualityData(cityDataResponse.cityData);
+        setCityAirQuality(categorizedData);
       } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error)
+        console.error('Failed to fetch data:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchStats()
-  }, [])
+    fetchData();
+  }, []);
 
   const statCards = [
     {
@@ -170,7 +173,13 @@ export default function Dashboard() {
                     <Skeleton className="h-8 w-20" />
                   ) : (
                     <>
-                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <div className="text-2xl font-bold">
+                        {stat.value === undefined || stat.value === null ? (
+                          <span className="text-sm text-muted-foreground">数据加载中...</span>
+                        ) : (
+                          stat.value
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {stat.description}
                       </p>
@@ -189,6 +198,14 @@ export default function Dashboard() {
               <CardContent>
                 {loading ? (
                   <Skeleton className="h-[300px] w-full" />
+                ) : cityAirQuality === null ? (
+                  <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                    数据加载中...
+                  </div>
+                ) : cityAirQuality.length === 0 ? (
+                  <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                    暂无空气质量数据
+                  </div>
                 ) : (
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -235,6 +252,10 @@ export default function Dashboard() {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Skeleton key={i} className="h-12 w-full" />
                     ))}
+                  </div>
+                ) : !stats?.recent_activities?.length ? (
+                  <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                    暂无活动记录
                   </div>
                 ) : (
                   <ScrollArea className="h-[300px]">

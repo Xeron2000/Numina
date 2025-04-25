@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AlertCircle } from "lucide-react";
+import { cityDataService } from '@/services/city-data';
 
 // interface CityData {
 //   [key: string]: {};
@@ -139,15 +140,22 @@ export default function GeospatialMap() {
     const myChart = echarts.init(chartRef.current);
     chart.current = myChart;
     const initMapAfterDataLoaded = async () => {
-      if (!sessionStorage.getItem('provinceData') && !sessionStorage.getItem("cityData")) {
-        await allCityData(); // 如果是异步函数
+      try {
+        // 检查sessionStorage中是否已有数据
+        if (!sessionStorage.getItem('provinceData') || !sessionStorage.getItem('cityData')) {
+          await cityDataService.getCityData();
+        }
+        loadMap('china');
+      } catch (error) {
+        console.error('Failed to initialize map:', error);
+        toast({
+          variant: "destructive",
+          description: "加载地图数据失败，请刷新重试",
+        });
       }
-
-      // 数据加载完成后再加载地图
-      loadMap('china');
     };
 
-    initMapAfterDataLoaded(); // 调用初始化函数
+    initMapAfterDataLoaded();
 
     // 窗口大小变化时重绘图表
     const resizeHandler = () => myChart.resize();
