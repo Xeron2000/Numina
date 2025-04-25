@@ -15,4 +15,4 @@ email-validator
 cachetools
 rich
 requests
-sklearn-learn
+scikit-learn
