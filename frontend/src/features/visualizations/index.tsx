@@ -1,6 +1,6 @@
 // import { useNavigate } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { datasetsApi, Dataset } from '@/api/datasets' 
 import { useToast } from '@/hooks/use-toast'
 import { useQuery } from '@tanstack/react-query'
@@ -11,13 +11,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Search } from 'lucide-react'
 import { format } from 'date-fns'
-import { analyticsApi } from '@/api/analytics'
-import ReactECharts from 'echarts-for-react'
 
 interface DatasetResponse {
   items: Dataset[]
@@ -25,14 +22,11 @@ interface DatasetResponse {
 }
 
 export default function Visualizations() {
-  const { createSavedQuery } = analyticsApi
   // const navigate = useNavigate()
   const { toast } = useToast()
   const [searchText, setSearchText] = useState('')
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analyticsData, setAnalyticsData] = useState<any>(null)
   // , isLoading
   const { data } = useQuery({
     queryKey: ['datasets'],
@@ -73,38 +67,13 @@ export default function Visualizations() {
   }
 
   const handleClear = () => {
-    if (selectedDataset && isAnalyzing) {
-      toast({
-        variant: "destructive",
-        title: '警告',
-        description: '正在分析中，请稍后清空'
-      })
-    } else if (selectedDataset && !isAnalyzing) {
-      setSelectedDataset(null)
-    }
+    setSelectedDataset(null)
   }
 
-  const handleAnalyze = async () => {
-    if (selectedDataset && !isAnalyzing) {
-      try {
-        setIsAnalyzing(true)
-        console.log('分析数据集:', selectedDataset.id)
-        const data = await createSavedQuery(Number(selectedDataset.id))
-        setAnalyticsData(data)
-        toast({
-          variant: "default",
-          title: '成功',
-          description: '数据集分析成功'
-        })
-      } finally {
-        setIsAnalyzing(false)
-      }
-    } else if (isAnalyzing && selectedDataset) {
-      toast({
-        variant: "destructive",
-        title: '警告',
-        description: '正在分析中，请稍后再试'
-      })
+  const handleAnalyze = () => {
+    if (selectedDataset) {
+      console.log('分析数据集:', selectedDataset.id)
+      // TODO: 实现分析逻辑
     }
   }
 
@@ -115,9 +84,7 @@ export default function Visualizations() {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
   }
-  useEffect(() => {
-    
-  },[isAnalyzing])
+
   return (
     <>
       <Header>
@@ -140,9 +107,6 @@ export default function Visualizations() {
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>选择数据集</DialogTitle>
-                <DialogDescription>
-                  请从列表中选择要分析的数据集
-                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="flex items-center gap-2">
@@ -220,118 +184,6 @@ export default function Visualizations() {
             </div>
           </div>
         </div>
-        {analyticsData && (
-          <div className="space-y-6 mt-8">
-            {/* 数据分析摘要 */}
-            {analyticsData.summary && (
-              <div className="rounded-lg border p-6">
-                <h3 className="text-xl font-semibold mb-4">数据分析摘要</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {Object.entries(analyticsData.summary).map(([key, value]: [string, any]) => (
-                    <div key={key} className="p-4 bg-muted rounded-lg">
-                      <div className="text-sm text-muted-foreground">{key}</div>
-                      <div className="text-2xl font-bold">
-                        {typeof value === 'object' 
-                          ? Object.entries(value).map(([k, v]) => (
-                              <div key={k} className="text-sm">
-                                {String(k)}: {String(v)}
-                              </div>
-                            ))
-                          : String(value)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 图表展示 */}
-            {analyticsData.charts && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-semibold">数据可视化</h3>
-                <div className="grid grid-cols-1 gap-6">
-                  {Object.entries(analyticsData.charts).map(([key, chartData]: [string, any]) => (
-                    <div key={key} className="rounded-lg border p-4">
-                      <div className="h-[400px]">
-                        <ReactECharts
-                          option={{
-                            ...chartData,
-                            tooltip: {
-                              ...chartData.tooltip,
-                              formatter: key === 'quality_pie' 
-                                ? '{b}: {c} ({d}%)'
-                                : undefined
-                            },
-                            grid: {
-                              containLabel: true,
-                              left: '3%',
-                              right: '4%',
-                              bottom: '3%'
-                            },
-                            legend: key === 'pollutants_trend' ? {
-                              data: ["PM2.5", "PM10", "SO2", "NO2", "O3", "CO"]
-                            } : chartData.legend,
-                            series: key === 'pollutants_trend' ? chartData.series.map((series: any) => ({
-                              ...series,
-                              name: series.name === 'PM2_5' ? 'PM2.5' : series.name
-                            })) : chartData.series,
-                            radar: key === 'pollutant_radar' ? {
-                              ...chartData.radar,
-                              splitNumber: 5,
-                              axisLabel: {
-                                show: false  // 将 show 设置为 false 来隐藏数字标签
-                              },
-                              splitArea: {
-                                show: true
-                              },
-                              axisLine: {
-                                show: true
-                              }
-                            } : undefined,
-                            toolbox: {
-                              feature: {
-                                saveAsImage: {}
-                              }
-                            }
-                          }}
-                          style={{ height: '100%' }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 预测数据展示 */}
-            {analyticsData.prediction && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-semibold">预测分析</h3>
-                <div className="rounded-lg border p-4">
-                  <div className="h-[400px]">
-                    <ReactECharts
-                      option={{
-                        ...analyticsData.prediction,
-                        grid: {
-                          containLabel: true,
-                          left: '3%',
-                          right: '4%',
-                          bottom: '3%'
-                        },
-                        toolbox: {
-                          feature: {
-                            saveAsImage: {}
-                          }
-                        }
-                      }}
-                      style={{ height: '100%' }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </main>
     </>
   )

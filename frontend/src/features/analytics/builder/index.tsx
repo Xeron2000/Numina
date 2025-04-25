@@ -27,11 +27,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 
-interface QueryData {
-  name: string;
-  description: string;
-}
-
 export default function AnalyticsBuilder() {
   const [selectedDataset, setSelectedDataset] = useState<number | null>(null)
   const [queryString, setQueryString] = useState('')
@@ -41,13 +36,21 @@ export default function AnalyticsBuilder() {
 
   const { data: result, isLoading: isRunning, refetch } = useQuery({
     queryKey: ['query-result', selectedDataset, queryString],
-    queryFn: () => analyticsApi.createSavedQuery(selectedDataset!),
+    queryFn: () => analyticsApi.runQuery({ 
+      dataset_id: selectedDataset!, 
+      query_string: queryString 
+    }),
     enabled: false
   })
 
   const saveQueryMutation = useMutation({
-    mutationFn: (_data: QueryData) =>
-      analyticsApi.createSavedQuery(selectedDataset!),
+    mutationFn: (data: { name: string; description: string }) =>
+      analyticsApi.createSavedQuery({
+        name: data.name,
+        description: data.description,
+        query_string: queryString,
+        dataset_id: selectedDataset!,
+      }),
     onSuccess: () => {
       toast.success('查询已保存')
       setSaveDialogOpen(false)

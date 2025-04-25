@@ -15,6 +15,3 @@ email-validator
 cachetools
 rich
 requests
-scikit-learn
-statsmodels
-pandas
