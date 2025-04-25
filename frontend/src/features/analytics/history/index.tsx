@@ -42,10 +42,7 @@ export default function AnalyticsHistory() {
 
   const { data: tasksResponse, isLoading } = useQuery({
     queryKey: ['analytics-tasks', page, search],
-    queryFn: () => analyticsApi.getTasks({
-      skip: (page - 1) * PAGE_SIZE,
-      limit: PAGE_SIZE,
-    }),
+    queryFn: () => analyticsApi.getTasks(),
   })
 
   const tasks = tasksResponse?.data?.items || []
