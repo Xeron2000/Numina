@@ -353,7 +353,9 @@ async def create_saved_query(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-
+    task = db.query(AnalyticsTask).filter(AnalyticsTask.dataset_id == query_in).first()
+    if task and current_user.id == task.owner_id:
+        return json.loads(task.query_string)
     # 检查数据集是否存在
     dataset = db.query(Dataset).filter(Dataset.id == query_in).first()
     if not dataset:

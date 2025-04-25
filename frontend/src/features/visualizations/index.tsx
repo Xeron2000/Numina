@@ -1,6 +1,6 @@
 import { Header } from '@/components/layout/header'
 import { useEffect, useState } from 'react'
-import { datasetsApi, Dataset } from '@/api/datasets' 
+import { datasetsApi, Dataset } from '@/api/datasets'
 import { useToast } from '@/hooks/use-toast'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,9 @@ import { format } from 'date-fns'
 import ReactECharts from 'echarts-for-react'
 import { useLocation } from '@tanstack/react-router'
 import { analyticsApi } from '@/api/analytics'
-
+import { Brain } from 'lucide-react'
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import ReactMarkdown from 'react-markdown'
 interface DatasetResponse {
   items: Dataset[]
   total: number
@@ -32,6 +34,15 @@ export default function Visualizations() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analyticsData, setAnalyticsData] = useState<any>(null)
+  const [llmAnalysis, setLlmAnalysis] = useState<string>('')
+  const [isLlmDialogOpen, setIsLlmDialogOpen] = useState(false)
+  const [isLlmLoading, setIsLlmLoading] = useState(false)  // 添加加载状态
+
+  // 初始化 Gemini
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY as string);
+
+
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
 
   useEffect(() => {
     // 从 URL 搜索参数中获取数据
@@ -45,13 +56,13 @@ export default function Visualizations() {
         console.error('Failed to parse analytics data:', error)
       }
     }
-    
+
     // 检查是否有通过路由传递的数据
     if (location.state && 'analyticsData' in location.state) {
       setAnalyticsData(location.state.analyticsData)
     }
   }, [location.search, location.state])
-  
+
   const { data } = useQuery({
     queryKey: ['datasets'],
     queryFn: async () => {
@@ -61,11 +72,11 @@ export default function Visualizations() {
         if (!response) {
           throw new Error('No data received from server')
         }
-        
-        const sortedItems = [...response.items].sort((a, b) => 
+
+        const sortedItems = [...response.items].sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
-        
+
         return {
           items: sortedItems,
           total: response.total
@@ -81,7 +92,7 @@ export default function Visualizations() {
     }
   })
 
-  const filteredDatasets = data?.items.filter(dataset => 
+  const filteredDatasets = data?.items.filter(dataset =>
     dataset.name.toLowerCase().includes(searchText.toLowerCase())
   ) || []
 
@@ -243,6 +254,106 @@ export default function Visualizations() {
               <Button onClick={handleAnalyze} disabled={!selectedDataset}>
                 分析
               </Button>
+
+              <Dialog open={isLlmDialogOpen} onOpenChange={setIsLlmDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    disabled={!analyticsData}
+                    onClick={async () => {
+                      try {
+                        setIsLlmLoading(true);  // 开始加载
+                        let prompt = "";
+                        // 根据不同类型的数据生成不同的提示词
+                        if (analyticsData.summary && 'charts' in analyticsData) {
+                          if ('prediction' in analyticsData) {
+                            // 历史数据分析结果
+                            prompt = `分析这个城市的空气质量历史数据：
+                        1. 平均AQI为${analyticsData.summary.平均空气质量指数}
+                        2. 最高AQI为${analyticsData.summary.最高空气质量指数}
+                        3. 最低AQI为${analyticsData.summary.最低空气质量指数}
+                        请分析：
+                        1. 空气质量的总体趋势如何？
+                        2. 哪些时段空气质量较好/较差？
+                        3. 针对这种情况，有什么建议？
+                        4. 未来24小时的空气质量预测趋势如何？应该如何应对？`;
+                          } else if ('城市总数' in analyticsData.summary) {
+                            // 省份或全国数据分析结果
+                            const cityCount = analyticsData.summary.城市总数;
+                            const avgAQI = analyticsData.summary.平均空气质量指数;
+                            const qualityDist = analyticsData.summary.空气质量分布;
+                            prompt = `分析这${cityCount}个城市的空气质量数据：
+                        1. 平均AQI为${avgAQI}
+                        2. 空气质量分布：${JSON.stringify(qualityDist)}
+                        请分析：
+                        1. 整体空气质量状况如何？
+                        2. 哪些城市的空气质量较好/较差？
+                        3. 针对空气质量较差的地区，有什么改善建议？
+                        4. 从各项污染物指标来看，主要存在什么问题？`;
+                          }
+                        }
+
+
+
+                        // 调用大模型API
+                        const result = await model.generateContent(prompt);
+                        const response = await result.response;
+                        const text = response.text();
+
+                        if (!text) {
+                          throw new Error('分析请求失败');
+                        }
+
+                        setLlmAnalysis(text);
+                        setIsLlmDialogOpen(true);
+                      } catch (error) {
+                        console.error('调用大模型分析失败:', error);
+                        toast({
+                          variant: "destructive",
+                          title: '错误',
+                          description: '调用分析服务失败，请稍后重试'
+                        });
+                      } finally {
+                        setIsLlmLoading(false);  // 结束加载
+                      }
+                    }}
+                  >
+                    <Brain className="h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px] h-[600px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                      <Brain className="h-5 w-5" />
+                      智能分析结果
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4 overflow-y-auto flex-1">
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <div className="bg-card rounded-lg p-6">
+                        {isLlmLoading ? (
+                          <div className="space-y-3">
+                            <div className="h-4 bg-muted animate-pulse rounded w-3/4"></div>
+                            <div className="h-4 bg-muted animate-pulse rounded w-1/2"></div>
+                            <div className="h-4 bg-muted animate-pulse rounded w-5/6"></div>
+                            <div className="h-4 bg-muted animate-pulse rounded w-2/3"></div>
+                          </div>
+                        ) : (
+                          <ReactMarkdown
+                            components={{
+                              p: ({ node, ...props }) => <p className="text-base leading-7 mb-4" {...props} />
+                            }}
+                          >
+                            {llmAnalysis}
+                          </ReactMarkdown>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
@@ -257,12 +368,12 @@ export default function Visualizations() {
                     <div key={key} className="p-4 bg-muted rounded-lg">
                       <div className="text-sm text-muted-foreground">{key}</div>
                       <div className="text-2xl font-bold">
-                        {typeof value === 'object' 
+                        {typeof value === 'object'
                           ? Object.entries(value).map(([k, v]) => (
-                              <div key={k} className="text-sm">
-                                {String(k)}: {String(v)}
-                              </div>
-                            ))
+                            <div key={k} className="text-sm">
+                              {String(k)}: {String(v)}
+                            </div>
+                          ))
                           : String(value)}
                       </div>
                     </div>
@@ -284,7 +395,7 @@ export default function Visualizations() {
                             ...chartData,
                             tooltip: {
                               ...chartData.tooltip,
-                              formatter: key === 'quality_pie' 
+                              formatter: key === 'quality_pie'
                                 ? '{b}: {c} ({d}%)'
                                 : undefined
                             },
