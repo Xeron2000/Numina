@@ -16,3 +16,4 @@ cachetools
 rich
 requests
 scikit-learn
+tensorflow

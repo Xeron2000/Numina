@@ -130,9 +130,11 @@ def analyze_china_data(data):
 
 def analyze_historical_data(data):
     """分析历史空气质量数据"""
-    from sklearn.linear_model import LinearRegression
     import numpy as np
     from datetime import datetime
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import LSTM, Dense
+    from sklearn.preprocessing import MinMaxScaler
     
     result = {
         "summary": {},
@@ -174,15 +176,58 @@ def analyze_historical_data(data):
         "空气质量指数标准差": int(np.std(aqi_series))
     }
     
+    # 数据预处理
+    scaler = MinMaxScaler()
+    scaled_aqi = scaler.fit_transform(np.array(aqi_series).reshape(-1, 1))
+    
+    # 准备LSTM数据
+    def create_sequences(data, seq_length):
+        sequences = []
+        targets = []
+        for i in range(len(data) - seq_length):
+            sequences.append(data[i:(i + seq_length)])
+            targets.append(data[i + seq_length])
+        return np.array(sequences), np.array(targets)
+    
+    # 使用过去12小时数据预测
+    seq_length = 12
+    X, y = create_sequences(scaled_aqi, seq_length)
+    
+    # 构建LSTM模型
+    model = Sequential([
+        LSTM(50, activation='relu', input_shape=(seq_length, 1), return_sequences=True),
+        LSTM(30, activation='relu'),
+        Dense(20, activation='relu'),
+        Dense(1)
+    ])
+    
+    model.compile(optimizer='adam', loss='mse')
+    
+    # 重塑数据以适应LSTM输入格式
+    X = X.reshape((X.shape[0], X.shape[1], 1))
+    
+    # 训练模型
+    model.fit(X, y, epochs=50, batch_size=32, verbose=0)
+    
     # 准备预测数据
-    X = np.array(range(len(time_series))).reshape(-1, 1)
-    y = np.array(aqi_series)
-    model = LinearRegression()
-    model.fit(X, y)
+    last_sequence = scaled_aqi[-seq_length:]
+    future_predictions = []
     
     # 预测未来24小时
-    future_X = np.array(range(len(time_series), len(time_series) + 24)).reshape(-1, 1)
-    predictions = model.predict(future_X)
+    current_sequence = last_sequence.reshape(1, seq_length, 1)
+    for _ in range(24):
+        next_pred = model.predict(current_sequence, verbose=0)
+        future_predictions.append(next_pred[0, 0])
+        current_sequence = np.roll(current_sequence, -1)
+        current_sequence[0, -1, 0] = next_pred[0, 0]
+    
+    # 反归一化预测结果
+    predictions = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1))
+    
+    # 计算预测的置信区间
+    confidence_range = 0.1  # 10%的置信区间
+    lower_bound = predictions * (1 - confidence_range)
+    upper_bound = predictions * (1 + confidence_range)
     
     # 生成图表数据
     result["charts"] = {
@@ -225,15 +270,35 @@ def analyze_historical_data(data):
     result["prediction"] = {
         "title": { "text": "空气质量指数预测" },
         "tooltip": { "trigger": "axis" },
+        "legend": {
+            "data": ["预测值", "置信区间上限", "置信区间下限"]
+        },
         "xAxis": { 
             "type": "category",
             "data": [f"未来{i+1}小时" for i in range(24)]
         },
         "yAxis": { "type": "value" },
-        "series": [{
-            "type": "line",
-            "data": [int(x) for x in predictions.tolist()]
-        }]
+        "series": [
+            {
+                "name": "预测值",
+                "type": "line",
+                "data": [int(x) for x in predictions.flatten()]
+            },
+            {
+                "name": "置信区间上限",
+                "type": "line",
+                "data": [int(x) for x in upper_bound.flatten()],
+                "lineStyle": {"opacity": 0.5},
+                "areaStyle": {"opacity": 0.1}
+            },
+            {
+                "name": "置信区间下限",
+                "type": "line",
+                "data": [int(x) for x in lower_bound.flatten()],
+                "lineStyle": {"opacity": 0.5},
+                "areaStyle": {"opacity": 0.1}
+            }
+        ]
     }
     
     return result

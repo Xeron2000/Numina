@@ -38,7 +38,45 @@ export default function Visualizations() {
   const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [llmAnalysis, setLlmAnalysis] = useState<string>('')
   const [isLlmDialogOpen, setIsLlmDialogOpen] = useState(false)
-  const [isLlmLoading, setIsLlmLoading] = useState(false)  // 添加加载状态
+  const [isLlmLoading, setIsLlmLoading] = useState(false)
+
+  // 添加骨架屏组件
+  const AnalyticsSkeleton = () => (
+    <div className="space-y-6 mt-8 animate-pulse">
+      {/* 摘要骨架 */}
+      <div className="rounded-lg border p-6">
+        <div className="h-6 w-48 bg-muted rounded mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-4 bg-muted rounded-lg">
+              <div className="h-4 w-24 bg-muted-foreground/20 rounded mb-2"></div>
+              <div className="h-8 w-32 bg-muted-foreground/20 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 图表骨架 */}
+      <div className="space-y-6">
+        <div className="h-6 w-32 bg-muted rounded"></div>
+        <div className="grid grid-cols-1 gap-6">
+          {[1, 2].map((i) => (
+            <div key={i} className="rounded-lg border p-4">
+              <div className="h-[400px] bg-muted rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 预测骨架 */}
+      <div className="space-y-6">
+        <div className="h-6 w-32 bg-muted rounded"></div>
+        <div className="rounded-lg border p-4">
+          <div className="h-[400px] bg-muted rounded"></div>
+        </div>
+      </div>
+    </div>
+  )
 
   // 初始化 Gemini
   const genAI = new GoogleGenerativeAI("");
@@ -404,10 +442,14 @@ export default function Visualizations() {
             </div>
           </div>
         </div>
-        {analyticsData && (
-          <div className="space-y-6 mt-8">
-            {/* 数据分析摘要 */}
-            {analyticsData.summary && (
+        {/* 修改数据展示部分 */}
+        {isAnalyzing ? (
+          <AnalyticsSkeleton />
+        ) : (
+          analyticsData && (
+            <div className="space-y-6 mt-8">
+              {/* 原有的数据分析摘要部分 */}
+              {analyticsData.summary && (
               <div className="rounded-lg border p-6">
                 <h3 className="text-xl font-semibold mb-4">数据分析摘要</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -515,7 +557,7 @@ export default function Visualizations() {
               </div>
             )}
           </div>
-        )}
+        ))}
       </main>
     </>
   )
