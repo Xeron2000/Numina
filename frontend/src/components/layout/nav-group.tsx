@@ -27,20 +27,22 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { NavCollapsible, NavItem, NavLink, type NavGroup } from './types'
+import { useTranslation } from 'react-i18next'
 
 export function NavGroup({ title, items }: NavGroup) {
+  const { t } = useTranslation()
   const { state } = useSidebar()
   const href = useLocation({ select: (location) => location.href })
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{title}</SidebarGroupLabel>
+      <SidebarGroupLabel>{t(title)}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const key = `${item.title}-${item.url}`
 
           // 检查是否是叶子节点且有有效的 URL
           if (!item.items && item.url) {
-            return <SidebarMenuLink key={key} item={item as NavLink} href={href} />
+            return <SidebarMenuLink key={key} item={item as NavLink} href={href} t={t} />
           }
 
           // 检查是否是有子项的节点
@@ -60,6 +62,7 @@ export function NavGroup({ title, items }: NavGroup) {
                 key={key} 
                 item={collapsibleItem} 
                 href={href} 
+                t={t}
               />
             )
           }
@@ -75,18 +78,18 @@ const NavBadge = ({ children }: { children: ReactNode }) => (
   <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>
 )
 
-const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
+const SidebarMenuLink = ({ item, href, t }: { item: NavLink; href: string; t: (key: string) => string }) => {
   const { setOpenMobile } = useSidebar()
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         asChild
         isActive={checkIsActive(href, item)}
-        tooltip={item.title}
+        tooltip={t(item.title)}
       >
         <Link to={item.url as any} onClick={() => setOpenMobile(false)}>
           {item.icon && <item.icon />}
-          <span>{item.title}</span>
+          <span>{t(item.title)}</span>
           {'badge' in item && <NavBadge>{item.badge}</NavBadge>}
         </Link>
       </SidebarMenuButton>
@@ -97,9 +100,11 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
 const SidebarMenuCollapsible = ({
   item,
   href,
+  t,
 }: {
   item: NavCollapsible
   href: string
+  t: (key: string) => string
 }) => {
   const { setOpenMobile } = useSidebar()
   return (
@@ -110,9 +115,9 @@ const SidebarMenuCollapsible = ({
     >
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.title}>
+          <SidebarMenuButton tooltip={t(item.title)}>
             {item.icon && <item.icon />}
-            <span>{item.title}</span>
+            <span>{t(item.title)}</span>
             {item.badge && <NavBadge>{item.badge}</NavBadge>}
             <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
           </SidebarMenuButton>
@@ -138,7 +143,7 @@ const SidebarMenuCollapsible = ({
                     onClick={() => setOpenMobile(false)}
                   >
                     {subItem.icon && <subItem.icon />}
-                    <span>{subItem.title}</span>
+                    <span>{t(subItem.title)}</span>
                     {subItem.badge && <NavBadge>{subItem.badge}</NavBadge>}
                   </Link>
                 </SidebarMenuSubButton>

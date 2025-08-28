@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 // 修改每页显示数量为5条
 const PAGE_SIZE = 5
@@ -54,6 +55,7 @@ interface Task {
 }
 
 export default function AnalyticsHistory() {
+  const { t } = useTranslation()
   const [page, setPage] = useState(1)
 
   const { data: tasksResponse, isLoading, refetch } = useQuery({
@@ -92,7 +94,7 @@ export default function AnalyticsHistory() {
   const handleDelete = async (e: React.MouseEvent, taskId: number) => {
     e.stopPropagation() // 防止触发行点击事件
     try {
-      if (window.confirm('确定要删除这个分析数据吗？')) {
+      if (window.confirm(t('history.confirm.delete'))) {
         await analyticsApi.deleteTask(taskId)
         // 删除成功后刷新数据
         refetch()
@@ -107,7 +109,7 @@ export default function AnalyticsHistory() {
       <Header className="border-b">
         <div className="flex h-16 items-center px-4">
           <div className="flex flex-1 items-center space-x-4">
-            <h2 className="text-lg font-semibold">分析历史</h2>
+            <h2 className="text-lg font-semibold">{t('history.title')}</h2>
           </div>
         </div>
       </Header>
@@ -117,15 +119,15 @@ export default function AnalyticsHistory() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>名称</TableHead>
-                <TableHead>状态</TableHead>
+                <TableHead>{t('history.table.name')}</TableHead>
+                <TableHead>{t('history.table.status')}</TableHead>
                 <TableHead>
                   <Button variant="ghost" size="sm" className="h-8 flex items-center">
-                    创建时间
+                    {t('history.table.created_at')}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
-                <TableHead className="text-right">操作</TableHead>
+                <TableHead className="text-right">{t('history.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,7 +143,7 @@ export default function AnalyticsHistory() {
               ) : tasks.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-32 text-center">
-                    没有找到分析记录
+                    {t('history.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -168,13 +170,13 @@ export default function AnalyticsHistory() {
                               size="sm"
                               onClick={(e) => handleDelete(e, task.id)}
                             >
-                              删除
+                              {t('history.delete')}
                             </Button>
                           </TableCell>
                         </TableRow>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>点击查看分析详情</p>
+                        <p>{t('history.tooltip.view')}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

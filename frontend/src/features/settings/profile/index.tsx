@@ -1,11 +1,13 @@
 import ContentSection from '../components/content-section'
 import ProfileForm from './profile-form'
+import { useTranslation } from 'react-i18next'
 
 export default function SettingsProfile() {
+  const { t } = useTranslation()
   return (
     <ContentSection
-      title='个人资料'
-      desc='这是其他人在网站上看到的您的信息。'
+      title={t('settings.profile.title')}
+      desc={t('settings.profile.desc')}
     >
       <ProfileForm />
     </ContentSection>

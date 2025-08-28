@@ -22,6 +22,7 @@ import { Brain } from 'lucide-react'
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import ReactMarkdown from 'react-markdown'
 import { Document, Paragraph, Packer, HeadingLevel } from 'docx'
+import { useTranslation } from 'react-i18next'
 interface DatasetResponse {
   items: Dataset[]
   total: number
@@ -31,6 +32,7 @@ export default function Visualizations() {
   const location = useLocation()
   const { createSavedQuery } = analyticsApi
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [searchText, setSearchText] = useState('')
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -82,7 +84,7 @@ export default function Visualizations() {
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY as string);
 
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   useEffect(() => {
     // 从 URL 搜索参数中获取数据
@@ -124,8 +126,8 @@ export default function Visualizations() {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: '错误',
-          description: '获取数据集失败'
+          title: t('datasets.error.title'),
+          description: t('datasets.error.load_failed')
         })
         throw error
       }
@@ -197,9 +199,9 @@ export default function Visualizations() {
       <Header>
         <div className="flex items-center justify-between py-8 mt-4">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight">数据分析与可视化</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t('viz.title')}</h2>
             <p className="text-sm text-muted-foreground">
-              分析数据，生成可视化图
+              {t('viz.subtitle')}
             </p>
           </div>
         </div>
@@ -209,17 +211,17 @@ export default function Visualizations() {
         <div className="flex justify-end mb-4">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>添加数据集</Button>
+              <Button>{t('viz.add_dataset')}</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>选择数据集</DialogTitle>
+                <DialogTitle>{t('viz.select_dataset')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="搜索数据集..."
+                    placeholder={t('viz.search_dataset')}
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     className="flex-1"
@@ -234,10 +236,10 @@ export default function Visualizations() {
                     >
                       <div className="font-medium">{dataset.name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {dataset.description || '暂无描述'}
+                        {dataset.description || t('viz.no_desc')}
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        创建于 {format(new Date(dataset.created_at), 'yyyy-MM-dd HH:mm')}
+                        {t('viz.created_at', { time: format(new Date(dataset.created_at), 'yyyy-MM-dd HH:mm') })}
                       </div>
                     </div>
                   ))}
@@ -284,15 +286,15 @@ export default function Visualizations() {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                暂无待分析数据集
+                {t('viz.none_pending')}
               </div>
             )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={handleClear} disabled={!selectedDataset}>
-                清空
+                {t('viz.clear')}
               </Button>
               <Button onClick={handleAnalyze} disabled={!selectedDataset}>
-                分析
+                {t('viz.analyze')}
               </Button>
 
               <Dialog open={isLlmDialogOpen} onOpenChange={setIsLlmDialogOpen}>
@@ -304,7 +306,7 @@ export default function Visualizations() {
                     disabled={!analyticsData}
                     onClick={async () => {
                       try {
-                        setIsLlmLoading(true);  // 开始加载
+                        setIsLlmLoading(true);
                         let prompt = "";
                         // 根据不同类型的数据生成不同的提示词
                         if (analyticsData.summary && 'charts' in analyticsData) {
@@ -337,26 +339,30 @@ export default function Visualizations() {
 
 
 
-                        // 调用大模型API
-                        const result = await model.generateContent(prompt);
-                        const response = await result.response;
-                        const text = response.text();
-
-                        if (!text) {
-                          throw new Error('分析请求失败');
-                        }
-
-                        setLlmAnalysis(text);
+                        // 调用大模型API（流式）
+                        setLlmAnalysis("");
                         setIsLlmDialogOpen(true);
+                        const streamResult = await model.generateContentStream(prompt);
+                        // 流式到达后切换为显示文本
+                        setIsLlmLoading(false);
+                        for await (const chunk of streamResult.stream) {
+                          const chunkText = chunk.text();
+                          if (chunkText) {
+                            setLlmAnalysis((prev) => prev + chunkText);
+                          }
+                        }
+                        // 等待完成以捕获可能的尾部错误
+                        await streamResult.response;
                       } catch (error) {
                         console.error('调用大模型分析失败:', error);
                         toast({
                           variant: "destructive",
-                          title: '错误',
-                          description: '调用分析服务失败，请稍后重试'
+                          title: t('viz.toast.error.title'),
+                          description: t('viz.ai.call_error')
                         });
+                        setIsLlmLoading(false);
                       } finally {
-                        setIsLlmLoading(false);  // 结束加载
+                        // 已在流开始时关闭加载；此处确保状态收敛
                       }
                     }}
                   >
@@ -367,7 +373,7 @@ export default function Visualizations() {
                   <DialogHeader>
                     <DialogTitle className="text-xl font-semibold flex items-center gap-2">
                       <Brain className="h-5 w-5" />
-                      智能分析结果
+                      {t('viz.ai.title')}
                     </DialogTitle>
                     <Button
                       disabled={isLlmLoading}
@@ -379,7 +385,7 @@ export default function Visualizations() {
                               properties: {},
                               children: [
                                 new Paragraph({
-                                  text: "空气质量分析报告",
+                                  text: t('viz.ai.report_name'),
                                   heading: HeadingLevel.HEADING_1
                                 }),
                                 new Paragraph({
@@ -406,13 +412,13 @@ export default function Visualizations() {
                           console.error('生成文档失败:', error);
                           toast({
                             variant: "destructive",
-                            title: '错误',
-                            description: '生成文档失败，请重试'
+                            title: t('viz.toast.error.title'),
+                            description: t('viz.ai.doc_error')
                           });
                         }
                       }}
                     >
-                      导出报告
+                      {t('viz.ai.export')}
                     </Button>
                   </DialogHeader>
                   <div className="space-y-4 py-4 overflow-y-auto flex-1">

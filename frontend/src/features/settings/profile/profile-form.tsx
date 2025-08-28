@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { settingsApi } from '@/api/settings'
+import { useTranslation } from 'react-i18next'
 
 const profileFormSchema = z.object({
   username: z
@@ -29,6 +30,7 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 export default function ProfileForm() {
+  const { t } = useTranslation()
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     mode: 'onChange',
@@ -48,13 +50,13 @@ export default function ProfileForm() {
       await settingsApi.updateProfile(values)
       // 直接显示成功提示
       toast({
-        title: '更新成功',
-        description: '您的个人资料已更新。',
+        title: t('settings.profile.toast.success.title'),
+        description: t('settings.profile.toast.success.desc'),
       })
     } catch (error) {
       toast({
-        title: '更新失败',
-        description: '请稍后重试。',
+        title: t('settings.profile.toast.error.title'),
+        description: t('settings.profile.toast.error.desc'),
         variant: 'destructive',
       })
     }
@@ -68,12 +70,12 @@ export default function ProfileForm() {
           name='username'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>用户名</FormLabel>
+              <FormLabel>{t('settings.profile.username')}</FormLabel>
               <FormControl>
-                <Input placeholder='请输入用户名' {...field} />
+                <Input placeholder={t('settings.profile.username_ph')} {...field} />
               </FormControl>
               <FormDescription>
-                这是您的公开显示名称。
+                {t('settings.profile.username_desc')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -84,9 +86,9 @@ export default function ProfileForm() {
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>邮箱</FormLabel>
+              <FormLabel>{t('settings.profile.email')}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder='请输入邮箱' {...field} />
+                <Input type="email" placeholder={t('settings.profile.email_ph')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -97,10 +99,10 @@ export default function ProfileForm() {
           name='bio'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>个人简介</FormLabel>
+              <FormLabel>{t('settings.profile.bio')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder='介绍一下你自己'
+                  placeholder={t('settings.profile.bio_ph')}
                   className='resize-none'
                   {...field}
                 />
@@ -109,7 +111,7 @@ export default function ProfileForm() {
             </FormItem>
           )}
         />
-        <Button type='submit'>更新个人资料</Button>
+        <Button type='submit'>{t('settings.profile.submit')}</Button>
       </form>
     </Form>
   )

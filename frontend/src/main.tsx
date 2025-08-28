@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast'
 import { FontProvider } from './context/font-context'
 import { ThemeProvider } from './context/theme-context'
 import './index.css'
+import './i18n'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 

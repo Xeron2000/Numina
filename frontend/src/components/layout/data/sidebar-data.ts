@@ -21,24 +21,24 @@ export const sidebarData: SidebarData = {
   },
   navGroups: [
     {
-      title: '概览',
+      title: 'nav.group.overview',
       items: [
         {
           icon: IconLayoutDashboard,
-          title: '仪表盘',
+          title: 'nav.dashboard',
           url: '/',
         },
       ],
     },
     {
-      title: '数据分析',
+      title: 'nav.group.analytics',
       items: [
         {
           // title: '空间分析',
           icon: IconMap,
           // items: [
           //   {
-          title: '地图分析',
+          title: 'nav.geospatial.map',
           url: '/apps/geospatial/map',
           // },
           // {
@@ -52,7 +52,7 @@ export const sidebarData: SidebarData = {
           // ]
         },
         {
-          title: '数据集',
+          title: 'nav.datasets',
           url: '/apps/datasets',
           icon: IconDatabase,
           // items: [
@@ -72,16 +72,16 @@ export const sidebarData: SidebarData = {
           // ]
         },
         {
-          title: '分析与可视化',
+          title: 'nav.group.viz',
           icon: IconChartBar,
 
           items: [
             {
-              title: '数据分析',
+              title: 'nav.visualizations',
               url: '/apps/visualizations',
             },
             {
-              title: '分析记录',
+              title: 'nav.analytics.history',
               url: '/apps/analytics/history',
             },
           //   {
@@ -118,23 +118,23 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: '系统',
+      title: 'nav.group.system',
       items: [
         {
-          title: '系统设置',
+          title: 'nav.system.settings',
           url: '/settings',
           icon: IconSettings,
           items: [
             {
-              title: '个人资料',
+              title: 'nav.profile',
               url: '/settings',
             },
             {
-              title: '账户设置',
+              title: 'nav.account',
               url: '/settings/account',
             },
             {
-              title: '外观设置',
+              title: 'nav.appearance',
               url: '/settings/appearance',
             },
             // {

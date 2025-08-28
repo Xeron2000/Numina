@@ -7,6 +7,7 @@ import { Main } from '@/components/layout/main'
 import { DatasetList } from './components/dataset-list'
 import { EmptyState } from './components/empty-state'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 
 interface DatasetResponse {
   items: Dataset[]  // Use the Dataset type from API
@@ -15,6 +16,7 @@ interface DatasetResponse {
 
 export default function Datasets() {
   const { toast } = useToast()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 5
@@ -41,8 +43,8 @@ export default function Datasets() {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: '错误',
-          description: '获取数据集失败'
+          title: t('datasets.error.title'),
+          description: t('datasets.error.load_failed')
         })
         throw error
       }
@@ -71,14 +73,14 @@ export default function Datasets() {
       })
 
       toast({
-        title: '成功',
-        description: '数据集已成功删除',
+        title: t('datasets.toast.delete.success.title'),
+        description: t('datasets.toast.delete.success.desc'),
       })
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: '错误',
-        description: '删除数据集失败'
+        title: t('datasets.toast.delete.error.title'),
+        description: t('datasets.toast.delete.error.desc')
       })
     }
   }
@@ -88,9 +90,9 @@ export default function Datasets() {
       <Header>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">数据集</h2>
+            <h2 className="text-lg font-semibold">{t('datasets.title')}</h2>
             <p className="text-sm text-muted-foreground">
-              管理和分析您的数据集
+              {t('datasets.subtitle')}
             </p>
           </div>
         </div>

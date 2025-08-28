@@ -15,10 +15,12 @@ import {
 } from '@/components/ui/select'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { useTranslation } from 'react-i18next'
 
 export default function DatasetUpload() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [dataType, setDataType] = useState<string>('')
   const [uploading, setUploading] = useState(false)
@@ -42,15 +44,15 @@ export default function DatasetUpload() {
       
       await datasetsApi.upload(fileData, province)
       toast({
-        title: '上传成功',
-        description: '数据集已成功上传',
+        title: t('upload.toast.success.title'),
+        description: t('upload.toast.success.desc'),
       })
       navigate({ to: '/apps/datasets' })
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: '上传失败',
-        description: '请检查文件格式或网络连接',
+        title: t('upload.toast.error.title'),
+        description: t('upload.toast.error.desc'),
       })
     } finally {
       setUploading(false)
@@ -70,9 +72,9 @@ export default function DatasetUpload() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h2 className="text-lg font-semibold">上传数据集</h2>
+            <h2 className="text-lg font-semibold">{t('upload.title')}</h2>
             <p className="text-sm text-muted-foreground">
-              支持上传 CSV 或 Excel 文件
+              {t('upload.subtitle')}
             </p>
           </div>
         </div>
@@ -84,21 +86,21 @@ export default function DatasetUpload() {
             <div className="flex flex-col space-y-1.5 p-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>数据类型</Label>
+                  <Label>{t('upload.data_type')}</Label>
                   <Select value={dataType} onValueChange={setDataType}>
                     <SelectTrigger>
-                      <SelectValue placeholder="选择数据类型" />
+                      <SelectValue placeholder={t('upload.data_type.placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="air_quality">空气质量数据</SelectItem>
-                      <SelectItem value="weather">气象数据</SelectItem>
-                      <SelectItem value="emission">排放源数据</SelectItem>
+                      <SelectItem value="air_quality">{t('upload.data_type.air_quality')}</SelectItem>
+                      <SelectItem value="weather">{t('upload.data_type.weather')}</SelectItem>
+                      <SelectItem value="emission">{t('upload.data_type.emission')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>选择文件</Label>
+                  <Label>{t('upload.select_file')}</Label>
                   <div className="grid gap-4">
                     <div className="rounded-lg border border-dashed p-8">
                       <Input
@@ -114,10 +116,10 @@ export default function DatasetUpload() {
                       >
                         <Upload className="h-8 w-8 text-muted-foreground" />
                         <span className="text-sm font-medium">
-                          {file ? file.name : '点击或拖拽文件到此处上传'}
+                          {file ? file.name : t('upload.drop_area')}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          支持 CSV、Excel 文件
+                          {t('upload.supported_types')}
                         </span>
                       </Label>
                     </div>
@@ -130,13 +132,13 @@ export default function DatasetUpload() {
                 variant="outline"
                 onClick={() => navigate({ to: '/apps/datasets' })}
               >
-                取消
+                {t('upload.cancel')}
               </Button>
               <Button
                 onClick={handleUpload}
                 disabled={!file || !dataType || uploading}
               >
-                {uploading ? '上传中...' : '上传'}
+                {uploading ? t('upload.uploading') : t('upload.upload')}
               </Button>
             </div>
           </div>

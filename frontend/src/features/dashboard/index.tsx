@@ -14,8 +14,10 @@ import { DashboardStats, dashboardApi } from '@/api/dashboard'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Pie, PieChart } from 'recharts'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cityDataService } from '@/services/city-data'
+import { useTranslation } from 'react-i18next'
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [cityAirQuality, setCityAirQuality] = useState<any>(null)
@@ -101,21 +103,21 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: '数据集总数',
+      title: t('dashboard.stats.datasets.title'),
       value: stats?.datasets_count,
-      description: '包含各地区空气质量监测数据',
+      description: t('dashboard.stats.datasets.desc'),
       icon: IconDatabase,
       link: '/apps/datasets'
     },
     {
-      title: '分析任务',
+      title: t('dashboard.stats.analytics.title'),
       value: stats?.analytics_count,
-      description: '已完成的数据分析任务',
+      description: t('dashboard.stats.analytics.desc'),
       icon: IconChartBar,
       link: '/apps/analytics/history'
     },
     {
-      title: '整体空气质量',
+      title: t('dashboard.stats.overall_aqi.title'),
       value: cityAirQuality ?
         (() => {
           const cityData = JSON.parse(sessionStorage.getItem('cityData') || '{}');
@@ -140,7 +142,7 @@ export default function Dashboard() {
 
           return cityCount > 0 ? Math.round(totalAQI / cityCount) : '-';
         })() : '-',
-      description: '全国城市平均AQI指数',
+      description: t('dashboard.stats.overall_aqi.desc'),
       icon: IconWind,
       link: '/apps/geospatial/map'
     }
@@ -151,7 +153,7 @@ export default function Dashboard() {
   return (
     <>
       <Header>
-        <h2 className="text-lg font-semibold">仪表盘</h2>
+        <h2 className="text-lg font-semibold">{t('dashboard.title')}</h2>
         <div className="ml-auto flex items-center gap-4">
           <ThemeSwitch />
           <ProfileDropdown />
@@ -198,18 +200,18 @@ export default function Dashboard() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>城市空气质量分布</CardTitle>
+                <CardTitle>{t('dashboard.city_quality_distribution')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <Skeleton className="h-[300px] w-full" />
                 ) : cityAirQuality === null ? (
                   <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-                    数据加载中...
+                    {t('dashboard.loading')}
                   </div>
                 ) : cityAirQuality.length === 0 ? (
                   <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-                    暂无空气质量数据
+                    {t('dashboard.no_data')}
                   </div>
                 ) : (
                   <div className="h-[300px] flex items-center justify-between">
@@ -229,7 +231,7 @@ export default function Dashboard() {
                             ))}
                           </Pie>
                           <Tooltip 
-                            formatter={(value: number) => [`${value} 个城市`, '数量']}
+                            formatter={(value: number) => [t('dashboard.tooltip.count', { count: value }), '']}
                             labelStyle={{ color: '#666' }}
                           />
                         </PieChart>
@@ -243,7 +245,7 @@ export default function Dashboard() {
                             style={{ backgroundColor: item.color }}
                           />
                           <span className="text-sm">
-                            {item.name}：{item.count} 个城市
+                            {t('dashboard.legend.item', { name: item.name, count: item.count })}
                           </span>
                         </div>
                       ))}
@@ -255,7 +257,7 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>空气质量最差城市 TOP10</CardTitle>
+                <CardTitle>{t('dashboard.worst_cities_top10')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -312,8 +314,8 @@ export default function Dashboard() {
                         />
                         <Tooltip
                           formatter={(value: any, name: string) => {
-                            if (name === 'aqi') return [`AQI: ${value}`, '空气质量指数'];
-                            return [value, name];
+                            if (name === 'aqi') return [t('dashboard.tooltip.aqi', { value }), t('dashboard.tooltip.aqi_label')]
+                            return [value, name]
                           }}
                         />
                         <Bar dataKey="aqi" fill="#ff7e00" name="aqi">

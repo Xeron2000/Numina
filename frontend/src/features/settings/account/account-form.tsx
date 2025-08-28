@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/popover'
 import { settingsApi } from '@/api/settings'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const languages = [
   { label: '中文', value: 'zh-CN' },
@@ -39,17 +40,19 @@ const languages = [
 ] as const
 
 const accountFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: '姓名至少需要2个字符。',
-    })
-    .max(30, {
-      message: '姓名不能超过30个字符。',
-    }),
-  dob: z.date({
-    required_error: '请选择出生日期。',
-  }),
+  name: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z
+      .string()
+      .min(2, {
+        message: '姓名至少需要2个字符。',
+      })
+      .max(30, {
+        message: '姓名不能超过30个字符。',
+      })
+      .optional()
+  ),
+  dob: z.date().optional(),
   language: z.string({
     required_error: '请选择语言。',
   }),
@@ -58,6 +61,7 @@ const accountFormSchema = z.object({
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
 export function AccountForm() {
+  const { t, i18n } = useTranslation()
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
@@ -76,30 +80,36 @@ export function AccountForm() {
             language: data.data.language,
             dob: data.data.dob ? new Date(data.data.dob) : undefined,
           })
+          if (data.data.language) {
+            i18n.changeLanguage(data.data.language)
+          }
         }
       } catch (error) {
         toast({
-          title: '加载失败',
-          description: '无法加载您的设置，请刷新页面重试。',
+          title: t('toast.load_failed.title'),
+          description: t('toast.load_failed.desc'),
           variant: 'destructive',
         })
       }
     }
     loadSettings()
-  }, [form])
+  }, [form, i18n, t])
 
-  async function onSubmit(_values: AccountFormValues) {
+  async function onSubmit(values: AccountFormValues) {
     try {
-      
-      // 直接显示成功提示，不需要检查 code
+      await settingsApi.updateAccountSettings({
+        name: values.name ?? '',
+        language: values.language,
+        dob: values.dob ? format(values.dob, 'yyyy-MM-dd') : '',
+      })
       toast({
-        title: '设置已更新',
-        description: '您的账户设置已成功保存。',
+        title: t('toast.update_success.title'),
+        description: t('toast.update_success.desc'),
       })
     } catch (error) {
       toast({
-        title: '更新失败',
-        description: '保存设置时发生错误，请稍后重试。',
+        title: t('toast.update_failed.title'),
+        description: t('toast.update_failed.desc'),
         variant: 'destructive',
       })
     }
@@ -113,9 +123,9 @@ export function AccountForm() {
           name='name'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>姓名</FormLabel>
+              <FormLabel>{t('settings.account.name_label')}</FormLabel>
               <FormControl>
-                <Input placeholder='输入您的姓名' {...field} />
+                <Input placeholder={t('settings.account.name_placeholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,7 +136,7 @@ export function AccountForm() {
           name='dob'
           render={({ field }) => (
             <FormItem className='flex flex-col'>
-              <FormLabel>出生日期</FormLabel>
+              <FormLabel>{t('settings.account.dob_label')}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -138,9 +148,9 @@ export function AccountForm() {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, 'yyyy年MM月dd日')
+                        format(field.value, 'yyyy-MM-dd')
                       ) : (
-                        <span>选择日期</span>
+                        <span>{t('settings.account.dob_select')}</span>
                       )}
                       <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                     </Button>
@@ -158,7 +168,7 @@ export function AccountForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                您的出生日期将用于计算年龄。
+                {t('settings.account.dob_description')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -169,7 +179,7 @@ export function AccountForm() {
           name='language'
           render={({ field }) => (
             <FormItem className='flex flex-col'>
-              <FormLabel>Language</FormLabel>
+              <FormLabel>{t('settings.account.language_label')}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -185,15 +195,15 @@ export function AccountForm() {
                         ? languages.find(
                             (language) => language.value === field.value
                           )?.label
-                        : 'Select language'}
+                        : t('settings.account.language_select')}
                       <CaretSortIcon className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className='w-[200px] p-0'>
                   <Command>
-                    <CommandInput placeholder='Search language...' />
-                    <CommandEmpty>No language found.</CommandEmpty>
+                    <CommandInput placeholder={t('settings.account.language_search')} />
+                    <CommandEmpty>{t('settings.account.language_empty')}</CommandEmpty>
                     <CommandGroup>
                       <CommandList>
                         {languages.map((language) => (
@@ -202,6 +212,11 @@ export function AccountForm() {
                             key={language.value}
                             onSelect={() => {
                               form.setValue('language', language.value)
+                              i18n.changeLanguage(language.value)
+                              toast({
+                                title: t('toast.lang_changed.title'),
+                                description: t('toast.lang_changed.desc'),
+                              })
                             }}
                           >
                             <CheckIcon
@@ -221,13 +236,13 @@ export function AccountForm() {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                这是您在应用中看到的语言。
+                {t('settings.account.language_description')}
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type='submit'>保存账户设置</Button>
+        <Button type='submit'>{t('settings.account.save')}</Button>
       </form>
     </Form>
   )

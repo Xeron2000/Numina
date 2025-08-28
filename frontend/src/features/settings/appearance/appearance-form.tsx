@@ -20,6 +20,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { settingsApi } from '@/api/settings'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const appearanceFormSchema = z.object({
   theme: z.enum(['light', 'dark'], {
@@ -34,6 +35,7 @@ const appearanceFormSchema = z.object({
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export function AppearanceForm() {
+  const { t } = useTranslation()
   const { font, setFont } = useFont()
   const { theme, setTheme } = useTheme()
   const [loading, setLoading] = useState(false)
@@ -63,14 +65,14 @@ export function AppearanceForm() {
       
       // 显示成功提示
       toast({
-        title: '设置已更新',
-        description: '外观设置已成功保存。',
+        title: t('appearance.toast.success.title'),
+        description: t('appearance.toast.success.desc'),
       })
     } catch (error) {
       console.error('更新设置错误:', error) // 添加错误日志
       toast({
-        title: '更新失败',
-        description: '保存设置时发生错误，请稍后重试。',
+        title: t('appearance.toast.error.title'),
+        description: t('appearance.toast.error.desc'),
         variant: 'destructive',
       })
     } finally {
@@ -86,7 +88,7 @@ export function AppearanceForm() {
           name='font'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>字体</FormLabel>
+              <FormLabel>{t('appearance.font.label')}</FormLabel>
               <div className='relative w-max'>
                 <FormControl>
                   <select
@@ -106,7 +108,7 @@ export function AppearanceForm() {
                 <ChevronDownIcon className='absolute right-3 top-2.5 h-4 w-4 opacity-50' />
               </div>
               <FormDescription>
-                设置您想在应用中使用的字体。
+                {t('appearance.font.desc')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -117,9 +119,9 @@ export function AppearanceForm() {
           name='theme'
           render={({ field }) => (
             <FormItem className='space-y-1'>
-              <FormLabel>主题</FormLabel>
+              <FormLabel>{t('appearance.theme.label')}</FormLabel>
               <FormDescription>
-                选择应用的主题。
+                {t('appearance.theme.desc')}
               </FormDescription>
               <FormMessage />
               <RadioGroup
@@ -148,7 +150,7 @@ export function AppearanceForm() {
                         </div>
                       </div>
                       <span className='block w-full p-2 text-center font-normal'>
-                        浅色
+                        {t('appearance.theme.light')}
                       </span>
                     </div>
                   </FormLabel>
@@ -174,7 +176,7 @@ export function AppearanceForm() {
                         </div>
                       </div>
                       <span className='block w-full p-2 text-center font-normal'>
-                        深色
+                        {t('appearance.theme.dark')}
                       </span>
                     </div>
                   </FormLabel>
@@ -184,7 +186,7 @@ export function AppearanceForm() {
           )}
         />
         <Button type='submit' disabled={loading}>
-          {loading ? '保存中...' : '保存外观设置'}
+          {loading ? t('appearance.submit.saving') : t('appearance.submit')}
         </Button>
       </form>
     </Form>
