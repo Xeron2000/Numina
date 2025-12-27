@@ -108,19 +108,83 @@ frontend/
 
 
 ## 🚀 部署指南
-### 方式一：Docker Compose（推荐）
+### 快速启动（本地开发）
+
+#### 1. 启动后端
+```bash
+cd backend
+
+# 安装依赖（首次运行）
+uv sync
+
+# 初始化数据库（首次运行）
+uv run python scripts/init_db.py
+
+# 启动后端服务
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+后端服务将在 `http://localhost:8000` 启动，可访问 API 文档：`http://localhost:8000/docs`
+
+#### 2. 启动前端
+```bash
+cd frontend
+
+# 安装依赖（首次运行）
+pnpm install
+
+# 启动前端开发服务
+pnpm dev
+```
+
+前端服务将在 `http://localhost:5173` 启动
+
+---
+
+### 方式一：Docker Compose（推荐生产部署）
 ```bash
 # 首次启动
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose up -d --build
 
 # 后续启动
-docker compose -f docker-compose.prod.yml up -d
+docker compose up -d
+
+# 停止服务
+docker compose down
 ```
 
 **访问地址**：
-- 前端：`http://localhost:4137`
+- 前端：`http://localhost:4173`
 - 后端API：`http://localhost:8000`
 - API文档：`http://localhost:8000/docs`
+
+---
+
+### 方式二：Docker 镜像部署
+
+#### 使用 GitHub Actions 构建的镜像
+```bash
+# 前端
+docker pull ghcr.io/xeron2000/airsight-frontend:latest
+docker run -d -p 4173:4173 --name airsight-frontend ghcr.io/xeron2000/airsight-frontend:latest
+
+# 后端
+docker pull ghcr.io/xeron2000/airsight-backend:latest
+docker run -d -p 8000:8000 -v ./data:/app/data --name airsight-backend ghcr.io/xeron2000/airsight-backend:latest
+```
+
+#### 本地构建镜像
+```bash
+# 构建前端
+cd frontend
+docker build -t airsight-frontend .
+docker run -d -p 4173:4173 --name airsight-frontend airsight-frontend
+
+# 构建后端
+cd backend
+docker build -t airsight-backend .
+docker run -d -p 8000:8000 -v ./data:/app/data --name airsight-backend airsight-backend
+```
 
 ### 方式二：手动部署
 #### 后端
@@ -148,16 +212,92 @@ pnpm preview  # 启动预览服务器
 ```
 
 ## 🔄 维护说明
+
 ### 数据备份
 ```bash
-# 备份数据库
-copy backend\sql_app.db backup\sql_app.db.backup
+# 备份 SQLite 数据库
+cp backend/sql_app.db backup/sql_app.db.backup
+
+# 或者使用 Docker volume 备份
+docker cp airsight-backend:/app/data ./backup
+```
+
+### 数据库迁移
+```bash
+# 生成新迁移
+cd backend
+uv run alembic revision --autogenerate -m "描述"
+
+# 执行迁移
+uv run alembic upgrade head
 ```
 
 ### 更新部署
 ```bash
 # 拉取最新代码后执行
-docker compose -f docker-compose.prod.yml up -d --build
+git pull
+docker compose up -d --build
+
+# 或者使用预构建的镜像
+docker compose pull
+docker compose up -d
 ```
+
+### 清理缓存
+```bash
+# 清理 Docker 缓存
+docker system prune -a
+
+# 清理 pnpm 缓存
+cd frontend
+pnpm store prune
+```
+
+## 📝 默认账号
+
+| 角色 | 用户名 | 密码 |
+|------|--------|------|
+| 管理员 | admin | admin123 |
+
+> ⚠️ **注意**：生产环境请及时修改默认密码！
+
+## 🔧 环境变量
+
+### 后端环境变量
+```bash
+# 数据库（默认使用 SQLite）
+DATABASE_URL=sqlite:///./sql_app.db
+
+# API 密钥
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# CORS 配置
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:4173
+```
+
+### 前端环境变量
+```bash
+# API 地址
+VITE_API_URL=http://localhost:8000
+```
+
+## 🐛 常见问题
+
+### 后端启动失败
+1. 检查端口 8000 是否被占用：`lsof -i:8000`
+2. 确认数据库文件权限：`chmod 644 sql_app.db`
+3. 查看日志：`uv run uvicorn app.main:app --log-level debug`
+
+### 前端无法连接后端
+1. 确认后端服务正在运行：`curl http://localhost:8000/docs`
+2. 检查 `.env` 文件中的 `VITE_API_URL` 配置
+3. 检查 CORS 配置
+
+### Docker 启动失败
+1. 清理旧容器：`docker compose down -v`
+2. 重新构建：`docker compose build --no-cache`
+3. 查看日志：`docker compose logs -f`
 
 > ✨ 提示：所有代码块中的命令均支持 Windows/Linux/macOS 系统
