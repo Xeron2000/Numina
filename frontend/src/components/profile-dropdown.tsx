@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useEffect, useState } from 'react'
 import { authApi } from '@/api/auth'
-import Cookies from 'js-cookie'
 
 interface UserProfile {
   id: number
@@ -39,12 +38,12 @@ export function ProfileDropdown() {
       } catch (error) {
         console.error('Failed to fetch user profile:', error)
         if ((error as any).response?.status === 401) {
-          Cookies.remove('access_token')
+          localStorage.removeItem('access_token')
         }
       }
     }
 
-    const token = Cookies.get('access_token')
+    const token = localStorage.getItem('access_token')
     if (token) {
       console.log('Token found:', token)
       fetchUserProfile()
@@ -56,7 +55,6 @@ export function ProfileDropdown() {
   const handleLogout = async () => {
     try {
       await authApi.logout()
-      Cookies.remove('access_token')
       setUser(null)
       navigate({ to: '/sign-in' })
     } catch (error) {

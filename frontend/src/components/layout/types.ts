@@ -20,6 +20,7 @@ export type AppRoute =
   | '/settings'
   | '/settings/account'
   | '/settings/appearance'
+  | '/settings/llm'
   | '/settings/display'
   | '/settings/notifications'
   | '/help-center'

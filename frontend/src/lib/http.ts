@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { toast } from '@/hooks/use-toast'
-import Cookies from 'js-cookie'
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
@@ -10,7 +9,7 @@ export const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = Cookies.get('access_token')
+  const token = localStorage.getItem('access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

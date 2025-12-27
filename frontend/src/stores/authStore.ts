@@ -1,7 +1,6 @@
-import Cookies from 'js-cookie'
 import { create } from 'zustand'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
+const ACCESS_TOKEN = 'access_token'
 
 interface AuthUser {
   accountNo: string
@@ -21,9 +20,32 @@ interface AuthState {
   }
 }
 
+const getLocalStorageItem = (key: string): string => {
+  try {
+    return localStorage.getItem(key) || ''
+  } catch {
+    return ''
+  }
+}
+
+const setLocalStorageItem = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    console.error('Failed to save to localStorage')
+  }
+}
+
+const removeLocalStorageItem = (key: string) => {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    console.error('Failed to remove from localStorage')
+  }
+}
+
 export const useAuthStore = create<AuthState>()((set) => {
-  const cookieState = Cookies.get(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
+  const initToken = getLocalStorageItem(ACCESS_TOKEN)
   return {
     auth: {
       user: null,
@@ -32,17 +54,17 @@ export const useAuthStore = create<AuthState>()((set) => {
       accessToken: initToken,
       setAccessToken: (accessToken) =>
         set((state) => {
-          Cookies.set(ACCESS_TOKEN, JSON.stringify(accessToken))
+          setLocalStorageItem(ACCESS_TOKEN, accessToken)
           return { ...state, auth: { ...state.auth, accessToken } }
         }),
       resetAccessToken: () =>
         set((state) => {
-          Cookies.remove(ACCESS_TOKEN)
+          removeLocalStorageItem(ACCESS_TOKEN)
           return { ...state, auth: { ...state.auth, accessToken: '' } }
         }),
       reset: () =>
         set((state) => {
-          Cookies.remove(ACCESS_TOKEN)
+          removeLocalStorageItem(ACCESS_TOKEN)
           return {
             ...state,
             auth: { ...state.auth, user: null, accessToken: '' },

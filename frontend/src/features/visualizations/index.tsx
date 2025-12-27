@@ -19,7 +19,7 @@ import ReactECharts from 'echarts-for-react'
 import { useLocation } from '@tanstack/react-router'
 import { analyticsApi } from '@/api/analytics'
 import { Brain } from 'lucide-react'
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { llmApi } from '@/api/llm'
 import ReactMarkdown from 'react-markdown'
 import { Document, Paragraph, Packer, HeadingLevel } from 'docx'
 import { useTranslation } from 'react-i18next'
@@ -79,12 +79,6 @@ export default function Visualizations() {
       </div>
     </div>
   )
-
-  // 初始化 Gemini
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY as string);
-
-
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   useEffect(() => {
     // 从 URL 搜索参数中获取数据
@@ -337,32 +331,28 @@ export default function Visualizations() {
                           }
                         }
 
-
-
-                        // 调用大模型API（流式）
                         setLlmAnalysis("");
                         setIsLlmDialogOpen(true);
-                        const streamResult = await model.generateContentStream(prompt);
-                        // 流式到达后切换为显示文本
-                        setIsLlmLoading(false);
-                        for await (const chunk of streamResult.stream) {
-                          const chunkText = chunk.text();
-                          if (chunkText) {
-                            setLlmAnalysis((prev) => prev + chunkText);
-                          }
+
+                        const response = await llmApi.chat({
+                          message: prompt,
+                          dataset_id: selectedDataset?.id
+                        });
+
+                        if (!response.ok) {
+                          throw new Error(`HTTP ${response.status}`);
                         }
-                        // 等待完成以捕获可能的尾部错误
-                        await streamResult.response;
+
+                        const text = await response.text();
+                        setLlmAnalysis(text);
+                        setIsLlmLoading(false);
                       } catch (error) {
-                        console.error('调用大模型分析失败:', error);
+                        setIsLlmLoading(false);
                         toast({
                           variant: "destructive",
                           title: t('viz.toast.error.title'),
-                          description: t('viz.ai.call_error')
+                          description: error instanceof Error ? error.message : t('viz.ai.call_error')
                         });
-                        setIsLlmLoading(false);
-                      } finally {
-                        // 已在流开始时关闭加载；此处确保状态收敛
                       }
                     }}
                   >
@@ -425,11 +415,11 @@ export default function Visualizations() {
                     <div className="prose prose-sm max-w-none dark:prose-invert">
                       <div className="bg-card rounded-lg p-6">
                         {isLlmLoading ? (
-                          <div className="space-y-3">
-                            <div className="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-                            <div className="h-4 bg-muted animate-pulse rounded w-1/2"></div>
-                            <div className="h-4 bg-muted animate-pulse rounded w-5/6"></div>
-                            <div className="h-4 bg-muted animate-pulse rounded w-2/3"></div>
+                          <div className="space-y-4">
+                            <div className="text-center text-muted-foreground">分析中，请稍候...</div>
+                            <div className="relative h-2 w-full overflow-hidden rounded-full bg-primary/20">
+                              <div className="h-full w-2/3 animate-pulse bg-primary"></div>
+                            </div>
                           </div>
                         ) : (
                           <ReactMarkdown

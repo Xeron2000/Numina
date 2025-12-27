@@ -1,0 +1,27 @@
+[project]
+name = "airsight-backend"
+version = "1.0.0"
+description = "AirSight backend API for air pollution data analysis"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic<2",
+    "SQLAlchemy",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "python-multipart",
+    "pandas",
+    "numpy",
+    "openpyxl",
+    "python-dotenv",
+    "alembic",
+    "bcrypt==4.0.1",
+    "email-validator",
+    "cachetools",
+    "rich",
+    "requests",
+    "scikit-learn",
+    "tensorflow",
+    "openai",
+]

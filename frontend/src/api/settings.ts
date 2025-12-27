@@ -42,6 +42,14 @@ export interface AccountSettings {
   dob: string
 }
 
+// LLM配置接口
+export interface LLMConfig {
+  base_url: string
+  api_key: string
+  model: string
+  provider: string
+}
+
 export const settingsApi = {
   getSettings: () =>
     http.get<UserSettings>('/api/settings/profile'),
@@ -75,4 +83,12 @@ export const settingsApi = {
   // 更新账户设置
   updateAccountSettings: (data: AccountSettings) =>
     http.put<BaseResponse<AccountSettings>>('/api/settings/account', data),
+
+  // 获取LLM配置
+  getLLMConfig: () =>
+    http.get<BaseResponse<LLMConfig>>('/api/settings/llm'),
+
+  // 更新LLM配置
+  updateLLMConfig: (data: LLMConfig) =>
+    http.put<BaseResponse<LLMConfig>>('/api/settings/llm', data),
 }

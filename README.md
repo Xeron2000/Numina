@@ -49,22 +49,18 @@ AirSight 是一个空气污染数据分析平台，提供数据上传、分析�
 ## 💻 开发环境搭建
 ### 后端开发环境
 ```bash
-# 创建虚拟环境
-cd backend
-python -m venv .venv
-# Windows 激活
-.venv\Scripts\activate
-# Linux/Mac 激活
-source .venv/bin/activate
+# 安装 uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # 安装依赖
-pip install -r requirements.txt
+cd backend
+uv sync
 
 # 初始化数据库
-python scripts/init_db.py
+uv run python scripts/init_db.py
 
 # 启动服务
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 前端开发环境
@@ -129,17 +125,18 @@ docker compose -f docker-compose.prod.yml up -d
 ### 方式二：手动部署
 #### 后端
 ```bash
+# 安装 uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # 安装依赖
 cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+uv sync
 
 # 初始化数据库
-python scripts/init_db.py
+uv run python scripts/init_db.py
 
 # 启动服务
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 #### 前端

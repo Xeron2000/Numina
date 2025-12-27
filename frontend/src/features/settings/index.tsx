@@ -5,6 +5,7 @@ import {
   IconPalette,
   IconTool,
   IconUser,
+  IconBrain,
 } from '@tabler/icons-react'
 import { Separator } from '@/components/ui/separator'
 import { Header } from '@/components/layout/header'
@@ -59,6 +60,11 @@ const sidebarNavItems = (t: (key: string) => string) => [
     title: t('settings.sidebar.appearance'),
     icon: <IconPalette size={18} />,
     href: '/settings/appearance',
+  },
+  {
+    title: t('settings.sidebar.llm'),
+    icon: <IconBrain size={18} />,
+    href: '/settings/llm',
   },
   // {
   //   title: t('settings.sidebar.notifications'),

@@ -51,7 +51,7 @@ export const geospatialApi = {
     http.get<MapData>('/api/geospatial/map'),
 
   getHeatmapData: () =>
-    http.get<MapData>('/api/v1/geospatial/heatmap'),
+    http.get<MapData>('/api/geospatial/heatmap'),
 
   getCityData: () =>
     http.get<CityResponseData>('/api/geospatial/city'),

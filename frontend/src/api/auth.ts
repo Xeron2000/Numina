@@ -1,5 +1,4 @@
 import { http } from '@/lib/http'
-import Cookies from 'js-cookie'
 
 export interface LoginCredentials {
   email: string
@@ -23,20 +22,18 @@ export interface AuthResponse {
 export const authApi = {
   login: async (credentials: LoginCredentials) => {
     const response = await http.post<AuthResponse>('/api/auth/login', credentials) as unknown as AuthResponse
-    Cookies.set('access_token', response.access_token, {
-      path: '/',
-      secure: true,
-      sameSite: 'strict'
-    })
+    localStorage.setItem('access_token', response.access_token)
     return response
   },
-    
+
   register: (data: RegisterCredentials) =>
     http.post<AuthResponse>('/api/auth/register', data) as unknown as Promise<AuthResponse>,
-    
-  logout: () => 
-    http.post('/api/auth/logout'),
-  
-  me: () => 
+
+  logout: () => {
+    localStorage.removeItem('access_token')
+    return http.post('/api/auth/logout')
+  },
+
+  me: () =>
     http.get<AuthResponse>('/api/auth/profile') as unknown as Promise<AuthResponse>,
 }

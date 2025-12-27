@@ -137,6 +137,10 @@ export const sidebarData: SidebarData = {
               title: 'nav.appearance',
               url: '/settings/appearance',
             },
+            {
+              title: 'nav.llm_settings',
+              url: '/settings/llm',
+            },
             // {
             //   title: '显示设置',
             //   url: '/settings/display',

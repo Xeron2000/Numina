@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import Cookies from 'js-cookie'
 import { authApi } from '@/api/auth'
 import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
@@ -10,7 +9,7 @@ import SkipToMain from '@/components/skip-to-main'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: () => {
-    const token = Cookies.get('access_token')
+    const token = localStorage.getItem('access_token')
     if (!token) {
       throw redirect({
         to: '/sign-in',
@@ -22,14 +21,14 @@ export const Route = createFileRoute('/_authenticated')({
 
 function AuthenticatedLayout() {
   const navigate = useNavigate()
-  const defaultOpen = Cookies.get('sidebar:state') !== 'false'
+  const defaultOpen = localStorage.getItem('sidebar:state') !== 'false'
 
   useEffect(() => {
     const verifyAuth = async () => {
       try {
         await authApi.me()
       } catch (error) {
-        Cookies.remove('access_token')
+        localStorage.removeItem('access_token')
         navigate({ to: '/sign-in' })
       }
     }
