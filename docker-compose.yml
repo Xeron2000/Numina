@@ -3,38 +3,25 @@ version: '3.8'
 services:
   frontend:
     container_name: airsight-frontend
-    image: airsight-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://localhost:8000
-        - VITE_GEMINI_API_KEY=your-key
+    image: ghcr.io/xeron2000/airsight-frontend:latest
     ports:
       - "4173:4173"
     depends_on:
       - backend
     restart: unless-stopped
-    networks:
-      - app-network
+    environment:
+      - VITE_API_URL=http://localhost:8000
 
   backend:
     container_name: airsight-backend
-    image: airsight-backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/xeron2000/airsight-backend:latest
     ports:
       - "8000:8000"
     volumes:
       - sqlite_data:/app/data
     restart: unless-stopped
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+    environment:
+      - DATABASE_URL=sqlite:///./data/sql_app.db
 
 volumes:
   sqlite_data:
