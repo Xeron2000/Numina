@@ -3,7 +3,7 @@ version: '3.8'
 services:
   frontend:
     container_name: airsight-frontend
-    image: ghcr.io/xeron2000/airsight-frontend:latest
+    image: ghcr.io/xeronsh/airsight-frontend:latest
     ports:
       - "4173:4173"
     depends_on:
@@ -14,7 +14,7 @@ services:
 
   backend:
     container_name: airsight-backend
-    image: ghcr.io/xeron2000/airsight-backend:latest
+    image: ghcr.io/xeronsh/airsight-backend:latest
     ports:
       - "8000:8000"
     volumes:
